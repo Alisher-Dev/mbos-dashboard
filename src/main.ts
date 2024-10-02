@@ -7,10 +7,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
 
   const config = new DocumentBuilder()
-    .setTitle('chat-craft-api')
-    .setDescription('minimal desc for chat-craft')
+    .setTitle('mbos-dashbord')
+    .setDescription('minimal desc for mbos')
     .setVersion('1.0')
-    .addTag('chat')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
