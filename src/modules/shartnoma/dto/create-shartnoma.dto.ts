@@ -7,7 +7,7 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
-import { EnumShartnoma } from 'src/helpers/enum';
+import { EnumShartnoma, EnumShartnomaPaid } from 'src/helpers/enum';
 
 export class CreateShartnomaDto {
   @IsDateString()
@@ -26,6 +26,11 @@ export class CreateShartnomaDto {
   @IsString()
   @ApiProperty()
   price: string;
+
+  @IsEnum(EnumShartnomaPaid)
+  @ApiProperty()
+  @IsOptional()
+  purchase_status: EnumShartnomaPaid;
 
   @IsString()
   @ApiProperty()

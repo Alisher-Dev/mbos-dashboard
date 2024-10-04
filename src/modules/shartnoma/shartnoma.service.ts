@@ -20,14 +20,14 @@ export class ShartnomaService {
     private readonly userRepo: Repository<User>,
   ) {}
   async create(createShartnomaDto: CreateShartnomaDto) {
-    const newShartnome = this.shartnomeRepo.create(createShartnomaDto);
+    const newShartnoma = this.shartnomeRepo.create(createShartnomaDto);
 
-    newShartnome.total_price = (
+    newShartnoma.total_price = (
       createShartnomaDto.count * +createShartnomaDto.price
     ).toString();
 
     const secretId = v4();
-    newShartnome.shartnoma_id = secretId.slice(0, 6);
+    newShartnoma.shartnoma_id = secretId.slice(0, 6);
 
     const user = await this.userRepo.findOneBy({
       id: +createShartnomaDto.user_id,
@@ -37,9 +37,9 @@ export class ShartnomaService {
       throw new NotFoundException('user_id does not exist');
     }
 
-    newShartnome.user = user;
+    newShartnoma.user = user;
 
-    await this.shartnomeRepo.save(newShartnome);
+    await this.shartnomeRepo.save(newShartnoma);
 
     return new ApiResponse('create shartnome', 201);
   }
