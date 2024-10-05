@@ -20,7 +20,7 @@ export class Shartnoma extends RootEntity {
   @Column()
   total_price: string;
 
-  @Column()
+  @Column({ nullable: true })
   tolash_sana: string;
 
   @Column()

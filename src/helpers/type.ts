@@ -3,6 +3,7 @@ import { Request } from 'express';
 export interface FindAllQuery {
   page?: number;
   limit?: number;
+  search?: string;
 }
 
 export interface IPayload {

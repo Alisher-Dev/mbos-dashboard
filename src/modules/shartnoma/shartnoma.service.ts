@@ -3,7 +3,7 @@ import { CreateShartnomaDto } from './dto/create-shartnoma.dto';
 import { UpdateShartnomaDto } from './dto/update-shartnoma.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Shartnoma } from './entities/shartnoma.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { ApiResponse } from 'src/helpers/apiRespons';
 import { FindAllQuery } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
@@ -44,11 +44,12 @@ export class ShartnomaService {
     return new ApiResponse('create shartnome', 201);
   }
 
-  async findAll({ page, limit }: FindAllQuery) {
+  async findAll({ page, limit, search }: FindAllQuery) {
     const totalItems = await this.shartnomeRepo.count();
     const pagination = new Pagination(totalItems, page, limit);
 
     const shartnoma = await this.shartnomeRepo.find({
+      where: search && { service: Like(`%${search}%`) },
       skip: pagination.offset,
       take: pagination.limit,
     });
