@@ -45,6 +45,6 @@ export class Shartnoma extends RootEntity {
   @Column({ nullable: true })
   izoh: string;
 
-  @ManyToOne(() => User, (user) => user.shartnome)
+  @ManyToOne(() => User, (user) => user.shartnome, { onDelete: 'CASCADE' })
   user: User;
 }
