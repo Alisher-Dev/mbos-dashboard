@@ -1,34 +1,27 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { EnumIncamIsPaid, EnumIncamTpeTranslation } from 'src/helpers/enum';
 
 export class CreateIncomeDto {
   @IsNumber()
   @ApiProperty()
-  @IsOptional()
-  translation_benefit: number;
+  amount: number;
 
-  @IsNumber()
+  @IsEnum(EnumIncamTpeTranslation)
+  @ApiProperty()
+  payment_method: EnumIncamTpeTranslation;
+
+  @IsEnum(EnumIncamIsPaid)
+  @ApiProperty()
+  is_paid: EnumIncamIsPaid;
+
+  @IsString()
   @ApiProperty()
   @IsOptional()
-  cash_benefit: number;
+  description?: string;
 
-  @IsNumber()
-  @ApiProperty()
+  @IsString()
   @IsOptional()
-  online_benefit: number;
-
-  @IsNumber()
   @ApiProperty()
-  @IsOptional()
-  benefit: number;
-
-  @IsNumber()
-  @ApiProperty()
-  @IsOptional()
-  workers_harm: number;
-
-  @IsNumber()
-  @ApiProperty()
-  @IsOptional()
-  harm: number;
+  date: Date;
 }

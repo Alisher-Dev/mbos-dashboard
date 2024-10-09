@@ -12,13 +12,13 @@ import {
 import { ShartnomaService } from './shartnoma.service';
 import { CreateShartnomaDto } from './dto/create-shartnoma.dto';
 import { UpdateShartnomaDto } from './dto/update-shartnoma.dto';
-import { ApiTags } from '@nestjs/swagger';
-import { query } from 'express';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { FindAllQuery } from 'src/helpers/type';
 import { AuthGuard } from 'src/helpers/authGuard';
 
 @Controller('shartnoma')
 @ApiTags('shartnoma')
+@ApiBearerAuth('accessToken')
 export class ShartnomaController {
   constructor(private readonly shartnomaService: ShartnomaService) {}
 

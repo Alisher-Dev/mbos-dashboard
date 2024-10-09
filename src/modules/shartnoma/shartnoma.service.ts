@@ -9,6 +9,9 @@ import { FindAllQuery } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
 import { v4 } from 'uuid';
 import { User } from '../user/entities/user.entity';
+import { EnumShartnomaPaid } from 'src/helpers/enum';
+import { CreateIncomeDto } from '../income/dto/create-income.dto';
+import { Income } from '../income/entities/income.entity';
 
 @Injectable()
 export class ShartnomaService {
@@ -18,13 +21,13 @@ export class ShartnomaService {
 
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+
+    @InjectRepository(Income)
+    private readonly incomeRepo: Repository<Income>,
   ) {}
+
   async create(createShartnomaDto: CreateShartnomaDto) {
     const newShartnoma = this.shartnomeRepo.create(createShartnomaDto);
-
-    newShartnoma.total_price = (
-      createShartnomaDto.count * +createShartnomaDto.price
-    ).toString();
 
     const secretId = v4();
     newShartnoma.shartnoma_id = secretId.slice(0, 6);
@@ -39,6 +42,24 @@ export class ShartnomaService {
 
     newShartnoma.user = user;
 
+    const { price, advancePayment, count } = createShartnomaDto;
+    newShartnoma.remainingPayment = price * count - (advancePayment || 0);
+    newShartnoma.purchase_status =
+      advancePayment && advancePayment >= price * count
+        ? EnumShartnomaPaid.paid
+        : EnumShartnomaPaid.no_paid;
+
+    const newIncome = {
+      amount: createShartnomaDto.advancePayment || 0,
+      payment_method: createShartnomaDto.paymentMethod as unknown,
+      is_paid: 'paid',
+      date: new Date(),
+    };
+
+    const income = await this.incomeRepo.save(newIncome as CreateIncomeDto);
+
+    newShartnoma.income = [income];
+
     await this.shartnomeRepo.save(newShartnoma);
 
     return new ApiResponse('create shartnome', 201);
@@ -48,8 +69,11 @@ export class ShartnomaService {
     const totalItems = await this.shartnomeRepo.count();
     const pagination = new Pagination(totalItems, page, limit);
 
+    const whereClause = search ? { service: Like(`%${search}%`) } : {};
+
     const shartnoma = await this.shartnomeRepo.find({
-      where: search && { service: Like(`%${search}%`) },
+      relations: ['user', 'income'],
+      where: whereClause,
       skip: pagination.offset,
       take: pagination.limit,
     });
@@ -59,7 +83,7 @@ export class ShartnomaService {
 
   async findOne(id: number) {
     const shartnoma = await this.shartnomeRepo.findOne({
-      relations: ['user'],
+      relations: ['user', 'income'],
       where: { id },
     });
     if (!shartnoma) {
@@ -69,20 +93,16 @@ export class ShartnomaService {
   }
 
   async update(id: number, updateShartnomeDto: UpdateShartnomaDto) {
-    const shartnoma = await this.shartnomeRepo.findOneBy({ id });
+    const shartnoma = await this.shartnomeRepo.findOne({
+      where: { id },
+      relations: ['income'],
+    });
 
     if (!shartnoma) {
       throw new NotFoundException('shartnoma does not exist');
     }
 
     Object.assign(shartnoma, updateShartnomeDto);
-
-    if (updateShartnomeDto.count || updateShartnomeDto.price) {
-      shartnoma.total_price = (
-        (updateShartnomeDto.count || shartnoma.count) *
-        (+updateShartnomeDto.price || +shartnoma.price)
-      ).toString();
-    }
 
     if (!!updateShartnomeDto.user_id) {
       const user = await this.userRepo.findOneBy({
@@ -94,6 +114,29 @@ export class ShartnomaService {
       }
 
       shartnoma.user = user;
+    }
+
+    if (updateShartnomeDto.advancePayment) {
+      shartnoma.remainingPayment =
+        shartnoma.price * shartnoma.count - updateShartnomeDto.advancePayment;
+
+      shartnoma.purchase_status =
+        shartnoma.remainingPayment <= 0
+          ? EnumShartnomaPaid.paid
+          : EnumShartnomaPaid.no_paid;
+    }
+
+    if (updateShartnomeDto.advancePayment && updateShartnomeDto.paymentMethod) {
+      const newIncome = {
+        amount: updateShartnomeDto.advancePayment || 0,
+        payment_method: updateShartnomeDto.paymentMethod as unknown,
+        is_paid: 'paid',
+        date: new Date(),
+      };
+
+      const income = await this.incomeRepo.save(newIncome as CreateIncomeDto);
+
+      shartnoma.income = [...shartnoma.income, income];
     }
 
     await this.shartnomeRepo.save(shartnoma);

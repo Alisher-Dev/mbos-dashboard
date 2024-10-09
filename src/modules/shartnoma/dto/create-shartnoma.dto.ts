@@ -7,7 +7,11 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
-import { EnumShartnoma, EnumShartnomaPaid } from 'src/helpers/enum';
+import {
+  EnumShartnoma,
+  EnumShartnomaPaid,
+  EnumShartnomeTpeTranslation,
+} from 'src/helpers/enum';
 
 export class CreateShartnomaDto {
   @IsDateString()
@@ -23,14 +27,19 @@ export class CreateShartnomaDto {
   @ApiProperty()
   count: number;
 
-  @IsString()
+  @IsNumber()
   @ApiProperty()
-  price: string;
+  price: number;
 
   @IsEnum(EnumShartnomaPaid)
-  @ApiProperty()
   @IsOptional()
+  @ApiProperty()
   purchase_status: EnumShartnomaPaid;
+
+  @IsEnum(EnumShartnomeTpeTranslation)
+  @IsOptional()
+  @ApiProperty()
+  paymentMethod: EnumShartnomeTpeTranslation;
 
   @IsString()
   @ApiProperty()
@@ -40,16 +49,22 @@ export class CreateShartnomaDto {
   @ApiProperty()
   shartnoma_muddati: string;
 
-  @IsString()
+  @IsNumber()
   @ApiProperty()
   user_id: string;
 
   @IsDateString()
   @ApiProperty()
+  @ApiProperty()
   texnik_muddati: string;
 
   @IsString()
-  @ApiProperty()
   @IsOptional()
-  izoh: string;
+  @ApiProperty()
+  izoh?: string;
+
+  @IsNumber()
+  @IsOptional()
+  @ApiProperty()
+  advancePayment?: number;
 }

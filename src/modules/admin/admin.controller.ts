@@ -14,10 +14,11 @@ import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { AuthGuard } from 'src/helpers/authGuard';
 import { IRequest } from 'src/helpers/type';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @Controller('admin')
 @ApiTags('admin')
+@ApiBearerAuth('accessToken')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 

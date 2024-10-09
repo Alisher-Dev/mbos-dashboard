@@ -4,9 +4,10 @@ import { ShartnomaController } from './shartnoma.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Shartnoma } from './entities/shartnoma.entity';
 import { User } from '../user/entities/user.entity';
+import { Income } from '../income/entities/income.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Shartnoma, User])],
+  imports: [TypeOrmModule.forFeature([Shartnoma, User, Income])],
   controllers: [ShartnomaController],
   providers: [ShartnomaService],
 })
