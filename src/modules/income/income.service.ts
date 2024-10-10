@@ -28,8 +28,17 @@ export class IncomeService {
       (createIncomeDto.payment_method === EnumIncamTpeTranslation.salary ||
         createIncomeDto.payment_method === EnumIncamTpeTranslation.delivery)
     ) {
-      throw new BadGatewayException('unaka income yaratilishi mumkun emas');
+      throw new BadGatewayException("unaka income yarata o'lmaysiz");
     }
+    if (
+      createIncomeDto.is_paid === EnumIncamIsPaid.no_paid &&
+      (createIncomeDto.payment_method === EnumIncamTpeTranslation.cash ||
+        createIncomeDto.payment_method === EnumIncamTpeTranslation.online ||
+        createIncomeDto.payment_method === EnumIncamTpeTranslation.translation)
+    ) {
+      throw new BadGatewayException("unaka income yarata o'lmaysiz");
+    }
+
     await this.incomeRepo.save(newIncome);
     return new ApiResponse('Income created', 201);
   }
@@ -55,7 +64,15 @@ export class IncomeService {
       (updateIncomeDto.payment_method === EnumIncamTpeTranslation.salary ||
         updateIncomeDto.payment_method === EnumIncamTpeTranslation.delivery)
     ) {
-      throw new BadGatewayException("unaka income o'zgartirish mumkun emas");
+      throw new BadGatewayException("income o'zgartira o'lmaysiz");
+    }
+    if (
+      updateIncomeDto.is_paid === EnumIncamIsPaid.no_paid &&
+      (updateIncomeDto.payment_method === EnumIncamTpeTranslation.cash ||
+        updateIncomeDto.payment_method === EnumIncamTpeTranslation.online ||
+        updateIncomeDto.payment_method === EnumIncamTpeTranslation.translation)
+    ) {
+      throw new BadGatewayException("income o'zgartira o'lmaysiz");
     }
 
     Object.assign(income, updateIncomeDto);

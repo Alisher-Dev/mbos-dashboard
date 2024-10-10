@@ -25,4 +25,5 @@ export enum EnumIncamTpeTranslation {
   online = 'online',
   salary = 'salary',
   delivery = 'delivery',
+  other = 'other',
 }
