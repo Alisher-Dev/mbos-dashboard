@@ -37,7 +37,7 @@ export class ShartnomaService {
     });
 
     if (!user) {
-      throw new NotFoundException('user_id does not exist');
+      throw new NotFoundException('user_id mavjud emas');
     }
 
     newShartnoma.user = user;
@@ -62,7 +62,7 @@ export class ShartnomaService {
 
     await this.shartnomeRepo.save(newShartnoma);
 
-    return new ApiResponse('create shartnome', 201);
+    return new ApiResponse('shartnoma yarating', 201);
   }
 
   async findAll({ page, limit, search }: FindAllQuery) {
@@ -87,7 +87,7 @@ export class ShartnomaService {
       where: { id },
     });
     if (!shartnoma) {
-      throw new NotFoundException('shartnoma does not exist');
+      throw new NotFoundException('shartnoma mavjud emas');
     }
     return new ApiResponse(shartnoma, 200);
   }
@@ -99,7 +99,7 @@ export class ShartnomaService {
     });
 
     if (!shartnoma) {
-      throw new NotFoundException('shartnoma does not exist');
+      throw new NotFoundException('shartnoma mavjud emas');
     }
 
     Object.assign(shartnoma, updateShartnomeDto);
@@ -110,7 +110,7 @@ export class ShartnomaService {
       });
 
       if (!user) {
-        throw new NotFoundException('user_id does not exist');
+        throw new NotFoundException('user_id mavjud emas');
       }
 
       shartnoma.user = user;
@@ -140,15 +140,15 @@ export class ShartnomaService {
     }
 
     await this.shartnomeRepo.save(shartnoma);
-    return new ApiResponse(`shartnoma updated`, 201);
+    return new ApiResponse(`shartnoma o'gartirildi`, 201);
   }
 
   async remove(id: number) {
     const shartnoma = await this.shartnomeRepo.findOneBy({ id });
     if (!shartnoma) {
-      throw new NotFoundException('shartnoma does not exist');
+      throw new NotFoundException('shartnoma mavjud emas');
     }
     await this.shartnomeRepo.delete(id);
-    return new ApiResponse(`remove shartnoma`);
+    return new ApiResponse(`shartnoma o'chirildi`);
   }
 }

@@ -19,7 +19,7 @@ export class UserService {
 
     await this.userRepo.save(newUser);
 
-    return new ApiResponse('create user', 201);
+    return new ApiResponse('foydalanuvchi yaratish', 201);
   }
 
   async findAll({ page, limit, search }: FindAllQuery) {
@@ -40,7 +40,7 @@ export class UserService {
       where: { id },
     });
     if (!user) {
-      throw new NotFoundException('user does not exist');
+      throw new NotFoundException('foydalanuvchi mavjud emas');
     }
     return new ApiResponse(user, 200);
   }
@@ -49,21 +49,21 @@ export class UserService {
     const user = await this.userRepo.findOneBy({ id });
 
     if (!user) {
-      throw new NotFoundException('user does not exist');
+      throw new NotFoundException('foydalanuvchi mavjud emas');
     }
 
     Object.assign(user, updateUserDto);
 
     await this.userRepo.save(user);
-    return new ApiResponse(`user updated`, 201);
+    return new ApiResponse(`foydalanuvchi yangilandi`, 201);
   }
 
   async remove(id: number) {
     const user = await this.userRepo.findOneBy({ id });
     if (!user) {
-      throw new NotFoundException('user does not exist');
+      throw new NotFoundException('foydalanuvchi mavjud emas');
     }
     await this.userRepo.delete(id);
-    return new ApiResponse(`remove user`);
+    return new ApiResponse(`foydalanuvchi o'chirildi`);
   }
 }

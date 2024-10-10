@@ -55,8 +55,11 @@ export class CreateShartnomaDto {
 
   @IsDateString()
   @ApiProperty()
-  @ApiProperty()
   texnik_muddati: string;
+
+  @IsDateString()
+  @ApiProperty()
+  tolash_sana: string;
 
   @IsString()
   @IsOptional()

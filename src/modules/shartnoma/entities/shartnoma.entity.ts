@@ -42,10 +42,10 @@ export class Shartnoma extends RootEntity {
   })
   purchase_status: EnumShartnomaPaid;
 
-  @Column({ type: 'decimal', default: 0 })
+  @Column({ type: 'bigint', default: 0 })
   advancePayment: number;
 
-  @Column({ type: 'decimal', default: 0 })
+  @Column({ type: 'bigint', default: 0 })
   remainingPayment: number;
 
   @Column({

@@ -24,7 +24,7 @@ export class AdminService {
     });
 
     if (!!admin) {
-      throw new BadRequestException('already have this');
+      throw new BadRequestException('admin allaqachon bor');
     }
     const newAdmin = this.adminRepo.create(createAdminDto);
     newAdmin.password = hashSync(createAdminDto.password, 5);
@@ -44,12 +44,12 @@ export class AdminService {
     const admin = await this.adminRepo.findOneBy({ user_name: body.user_name });
 
     if (!admin) {
-      throw new NotFoundException('admin not found');
+      throw new NotFoundException('admin topilmadi');
     }
 
     const checkPassword = compareSync(body.password, admin.password);
     if (!checkPassword) {
-      throw new BadRequestException('password is incorrect');
+      throw new BadRequestException("parol noto'g'ri");
     }
 
     const accessToken = token.generateAccessToken({ userId: admin.id });
@@ -65,7 +65,7 @@ export class AdminService {
   async Me(id: number) {
     const admin = await this.adminRepo.findOneBy({ id: id });
     if (!admin) {
-      throw new NotFoundException('admin not found');
+      throw new NotFoundException('admin topilmadi');
     }
 
     return new ApiResponse({
@@ -79,7 +79,7 @@ export class AdminService {
     const admin = await this.adminRepo.findOneBy({ id: userId });
 
     if (!admin) {
-      throw new NotFoundException('admin not found');
+      throw new NotFoundException('admin topilmadi');
     }
 
     const accessToken = token.generateAccessToken({ userId });
@@ -96,11 +96,11 @@ export class AdminService {
     const admin = await this.adminRepo.findOneBy({ id });
 
     if (!admin) {
-      throw new NotFoundException('admin not found');
+      throw new NotFoundException('admin topilmadi');
     }
 
     admin.token = null;
     await this.adminRepo.save(admin);
-    return new ApiResponse('logout');
+    return new ApiResponse('chikdingiz');
   }
 }
