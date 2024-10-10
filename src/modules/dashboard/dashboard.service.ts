@@ -19,14 +19,25 @@ export class DashboardService {
   async find() {
     const usersCount = await this.userRepo.count();
 
-    const [income, incomeCount] = await this.incomeRepo.findAndCount({
-      where: { is_paid: EnumIncamIsPaid.paid },
-    });
+    const income = await this.incomeRepo
+      .createQueryBuilder('income')
+      .select('SUM(income.amount)', 'total')
+      .where('income.is_paid = :isPaid', { isPaid: EnumIncamIsPaid.paid })
+      .getRawOne();
 
-    const [expend, expendCount] = await this.incomeRepo.findAndCount({
-      where: { is_paid: EnumIncamIsPaid.no_paid },
-    });
+    const expend = await this.incomeRepo
+      .createQueryBuilder('income')
+      .select('SUM(income.amount)', 'total')
+      .where('income.is_paid = :isPaid', { isPaid: EnumIncamIsPaid.no_paid })
+      .getRawOne();
 
-    return new ApiResponse({ usersCount, incomeCount, expendCount });
+    const recentContract = await this.incomeRepo.find();
+
+    return new ApiResponse({
+      usersCount,
+      income: income?.total || 0,
+      expend: expend?.total || 0,
+      recentContract: recentContract.slice(0, 5),
+    });
   }
 }
