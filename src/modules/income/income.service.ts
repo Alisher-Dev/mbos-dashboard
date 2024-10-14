@@ -56,6 +56,7 @@ export class IncomeService {
     const totalItems = await this.incomeRepo.count();
     const pagination = new Pagination(totalItems, page, limit);
     const incomes = await this.incomeRepo.find({
+      relations: ['user'],
       skip: pagination.offset,
       take: pagination.limit,
     });
