@@ -54,9 +54,10 @@ export class ShartnomaService {
       payment_method: createShartnomaDto.paymentMethod as unknown,
       is_paid: 'paid',
       date: new Date(),
+      user: user,
     };
 
-    const income = await this.incomeRepo.save(newIncome as CreateIncomeDto);
+    const income = await this.incomeRepo.save(newIncome as any);
 
     newShartnoma.income = [income];
 

@@ -27,7 +27,7 @@ export class UserService {
     const pagination = new Pagination(totalItems, page, limit);
 
     const user = await this.userRepo.find({
-      where: search && { F_I_O: Like(`%${search}%`) },
+      where: search.length && { F_I_O: Like(`%${search}%`) },
       skip: pagination.offset,
       take: pagination.limit,
     });

@@ -24,4 +24,8 @@ export class CreateIncomeDto {
   @IsOptional()
   @ApiProperty()
   date: Date;
+
+  @IsNumber()
+  @ApiProperty()
+  user_id: number;
 }

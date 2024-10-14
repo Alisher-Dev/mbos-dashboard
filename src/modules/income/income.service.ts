@@ -12,17 +12,21 @@ import { ApiResponse } from 'src/helpers/apiRespons';
 import { FindAllQuery } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
 import { EnumIncamIsPaid, EnumIncamTpeTranslation } from 'src/helpers/enum';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class IncomeService {
   constructor(
     @InjectRepository(Income)
     private readonly incomeRepo: Repository<Income>,
+
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
   ) {}
 
   async create(createIncomeDto: CreateIncomeDto) {
     const newIncome = this.incomeRepo.create(createIncomeDto);
-    newIncome.date = new Date();
+    newIncome.date = new Date(createIncomeDto.date);
     if (
       createIncomeDto.is_paid === EnumIncamIsPaid.paid &&
       (createIncomeDto.payment_method === EnumIncamTpeTranslation.salary ||
@@ -38,6 +42,11 @@ export class IncomeService {
     ) {
       throw new BadGatewayException("unaka income yarata o'lmaysiz");
     }
+    const user = await this.userRepo.findOneBy({ id: createIncomeDto.user_id });
+    if (!user) {
+      throw new NotFoundException('foydalanuvchi topilmadi');
+    }
+    newIncome.user = user;
 
     await this.incomeRepo.save(newIncome);
     return new ApiResponse('Income created', 201);
@@ -74,6 +83,12 @@ export class IncomeService {
     ) {
       throw new BadGatewayException("income o'zgartira o'lmaysiz");
     }
+
+    const user = await this.userRepo.findOneBy({ id: updateIncomeDto.user_id });
+    if (!user) {
+      throw new NotFoundException('foydalanuvchi topilmadi');
+    }
+    income.user = user;
 
     Object.assign(income, updateIncomeDto);
     await this.incomeRepo.save(income);
