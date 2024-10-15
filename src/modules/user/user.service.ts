@@ -26,8 +26,12 @@ export class UserService {
     const totalItems = await this.userRepo.count();
     const pagination = new Pagination(totalItems, page, limit);
 
+    const whereClause = search
+      ? [{ phone: Like(`%${search}%`) }, { F_I_O: Like(`%${search}%`) }]
+      : {};
+
     const user = await this.userRepo.find({
-      where: search.length && { F_I_O: Like(`%${search}%`) },
+      where: whereClause,
       skip: pagination.offset,
       take: pagination.limit,
     });
@@ -37,6 +41,7 @@ export class UserService {
 
   async findOne(id: number) {
     const user = await this.userRepo.findOne({
+      relations: ['shartnome', 'income'],
       where: { id },
     });
     if (!user) {

@@ -6,8 +6,9 @@ import { ShartnomaModule } from './modules/shartnoma/shartnoma.module';
 import { IncomeModule } from './modules/income/income.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { ServiceModule } from './modules/service/service.module';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(dbConfig), UserModule, ShartnomaModule, IncomeModule, AdminModule, DashboardModule],
+  imports: [TypeOrmModule.forRoot(dbConfig), UserModule, ShartnomaModule, IncomeModule, AdminModule, DashboardModule, ServiceModule],
 })
 export class AppModule {}

@@ -5,6 +5,7 @@ import {
 } from 'src/helpers/enum';
 import { RootEntity } from 'src/helpers/root.entity';
 import { Income } from 'src/modules/income/entities/income.entity';
+import { Service } from 'src/modules/service/entities/service.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import {
   Column,
@@ -23,17 +24,11 @@ export class Shartnoma extends RootEntity {
   @Column({ type: 'date' })
   sana: Date;
 
-  @Column({ type: 'float' })
-  price: number;
-
   @Column()
   count: number;
 
   @Column({ type: 'enum', enum: EnumShartnoma, default: EnumShartnoma.one_bay })
   shartnoma_turi: EnumShartnoma;
-
-  @Column()
-  service: string;
 
   @Column({
     type: 'enum',
@@ -71,7 +66,13 @@ export class Shartnoma extends RootEntity {
   user: User;
 
   @OneToMany(() => Income, (income) => income.shartnoma, {
+    cascade: true,
     onDelete: 'CASCADE',
   })
   income: Income[];
+
+  @ManyToOne(() => Service, (service) => service.shartnoma, {
+    onDelete: 'CASCADE',
+  })
+  service: Service;
 }

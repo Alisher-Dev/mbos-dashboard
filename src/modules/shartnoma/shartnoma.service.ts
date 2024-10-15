@@ -12,6 +12,7 @@ import { User } from '../user/entities/user.entity';
 import { EnumShartnomaPaid } from 'src/helpers/enum';
 import { CreateIncomeDto } from '../income/dto/create-income.dto';
 import { Income } from '../income/entities/income.entity';
+import { Service } from '../service/entities/service.entity';
 
 @Injectable()
 export class ShartnomaService {
@@ -24,6 +25,9 @@ export class ShartnomaService {
 
     @InjectRepository(Income)
     private readonly incomeRepo: Repository<Income>,
+
+    @InjectRepository(Service)
+    private readonly serviceRepo: Repository<Service>,
   ) {}
 
   async create(createShartnomaDto: CreateShartnomaDto) {
@@ -35,17 +39,24 @@ export class ShartnomaService {
     const user = await this.userRepo.findOneBy({
       id: +createShartnomaDto.user_id,
     });
-
     if (!user) {
       throw new NotFoundException('user_id mavjud emas');
     }
-
     newShartnoma.user = user;
 
-    const { price, advancePayment, count } = createShartnomaDto;
-    newShartnoma.remainingPayment = price * count - (advancePayment || 0);
+    const service = await this.serviceRepo.findOneBy({
+      id: +createShartnomaDto.service_id,
+    });
+    if (!service) {
+      throw new NotFoundException('service_id mavjud emas');
+    }
+    newShartnoma.service = service;
+
+    const { advancePayment, count } = createShartnomaDto;
+    newShartnoma.remainingPayment =
+      service.price * count - (advancePayment || 0);
     newShartnoma.purchase_status =
-      advancePayment && advancePayment >= price * count
+      advancePayment && advancePayment >= service.price * count
         ? EnumShartnomaPaid.paid
         : EnumShartnomaPaid.no_paid;
 
@@ -84,7 +95,7 @@ export class ShartnomaService {
 
   async findOne(id: number) {
     const shartnoma = await this.shartnomeRepo.findOne({
-      relations: ['user', 'income'],
+      relations: ['user', 'income', 'service'],
       where: { id },
     });
     if (!shartnoma) {
@@ -105,21 +116,29 @@ export class ShartnomaService {
 
     Object.assign(shartnoma, updateShartnomeDto);
 
+    const user = await this.userRepo.findOneBy({
+      id: +updateShartnomeDto.user_id,
+    });
     if (!!updateShartnomeDto.user_id) {
-      const user = await this.userRepo.findOneBy({
-        id: +updateShartnomeDto.user_id,
-      });
-
       if (!user) {
         throw new NotFoundException('user_id mavjud emas');
       }
-
       shartnoma.user = user;
+    }
+
+    const service = await this.serviceRepo.findOneBy({
+      id: +updateShartnomeDto.service_id,
+    });
+    if (!!updateShartnomeDto.service_id) {
+      if (!service) {
+        throw new NotFoundException('service_id mavjud emas');
+      }
+      shartnoma.service = service;
     }
 
     if (updateShartnomeDto.advancePayment) {
       shartnoma.remainingPayment =
-        shartnoma.price * shartnoma.count - updateShartnomeDto.advancePayment;
+        service.price * shartnoma.count - updateShartnomeDto.advancePayment;
 
       shartnoma.purchase_status =
         shartnoma.remainingPayment <= 0
@@ -133,9 +152,10 @@ export class ShartnomaService {
         payment_method: updateShartnomeDto.paymentMethod as unknown,
         is_paid: 'paid',
         date: new Date(),
+        user: user,
       };
 
-      const income = await this.incomeRepo.save(newIncome as CreateIncomeDto);
+      const income = await this.incomeRepo.save(newIncome as any);
 
       shartnoma.income = [...shartnoma.income, income];
     }

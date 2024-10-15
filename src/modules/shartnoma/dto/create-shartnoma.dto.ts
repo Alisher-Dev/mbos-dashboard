@@ -27,10 +27,6 @@ export class CreateShartnomaDto {
   @ApiProperty()
   count: number;
 
-  @IsNumber()
-  @ApiProperty()
-  price: number;
-
   @IsEnum(EnumShartnomaPaid)
   @IsOptional()
   @ApiProperty()
@@ -41,9 +37,9 @@ export class CreateShartnomaDto {
   @ApiProperty()
   paymentMethod: EnumShartnomeTpeTranslation;
 
-  @IsString()
+  @IsNumber()
   @ApiProperty()
-  service: string;
+  service_id: string;
 
   @IsDateString()
   @ApiProperty()

@@ -36,7 +36,7 @@ export class DashboardService {
       .getRawOne();
 
     const recentContract = await this.shartnomaRepo.find({
-      relations: ['user'],
+      relations: ['user', 'service'],
     });
 
     return new ApiResponse({

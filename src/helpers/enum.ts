@@ -27,3 +27,8 @@ export enum EnumIncamTpeTranslation {
   delivery = 'delivery',
   other = 'other',
 }
+
+export enum EnumServiceType {
+  service = 'service',
+  product = 'product',
+}

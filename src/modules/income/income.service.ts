@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Income } from './entities/income.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { CreateIncomeDto } from './dto/create-income.dto';
 import { ApiResponse } from 'src/helpers/apiRespons';
 import { FindAllQuery } from 'src/helpers/type';
@@ -52,10 +52,11 @@ export class IncomeService {
     return new ApiResponse('Income created', 201);
   }
 
-  async findAll({ page, limit }: FindAllQuery) {
+  async findAll({ page, limit, search }: FindAllQuery) {
     const totalItems = await this.incomeRepo.count();
     const pagination = new Pagination(totalItems, page, limit);
     const incomes = await this.incomeRepo.find({
+      where: search && { user: Like(`%${search}%`) },
       relations: ['user'],
       skip: pagination.offset,
       take: pagination.limit,
