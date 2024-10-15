@@ -11,6 +11,12 @@ export class Service extends RootEntity {
   @Column()
   price: number;
 
+  @Column({ nullable: true })
+  kg: string;
+
+  @Column({ nullable: true })
+  marta: string;
+
   @Column({ enum: EnumServiceType, type: 'enum' })
   serviceType: EnumServiceType;
 

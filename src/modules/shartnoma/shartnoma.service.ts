@@ -81,7 +81,7 @@ export class ShartnomaService {
     const totalItems = await this.shartnomeRepo.count();
     const pagination = new Pagination(totalItems, page, limit);
 
-    const whereClause = search ? { service: Like(`%${search}%`) } : {};
+    const whereClause = search ? { user: { F_I_O: Like(`%${search}%`) } } : {};
 
     const shartnoma = await this.shartnomeRepo.find({
       relations: ['user', 'income'],
