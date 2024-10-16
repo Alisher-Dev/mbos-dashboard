@@ -15,6 +15,11 @@ export class CreateIncomeDto {
   @ApiProperty()
   is_paid: EnumIncamIsPaid;
 
+  @IsNumber()
+  @IsOptional()
+  @ApiProperty()
+  shartnoma_id: number;
+
   @IsString()
   @ApiProperty()
   @IsOptional()

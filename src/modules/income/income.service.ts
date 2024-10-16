@@ -13,6 +13,7 @@ import { FindAllQuery } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
 import { EnumIncamIsPaid, EnumIncamTpeTranslation } from 'src/helpers/enum';
 import { User } from '../user/entities/user.entity';
+import { Shartnoma } from '../shartnoma/entities/shartnoma.entity';
 
 @Injectable()
 export class IncomeService {
@@ -22,6 +23,9 @@ export class IncomeService {
 
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+
+    @InjectRepository(Shartnoma)
+    private readonly shartnomaRepo: Repository<Shartnoma>,
   ) {}
 
   async create(createIncomeDto: CreateIncomeDto) {
@@ -48,6 +52,14 @@ export class IncomeService {
     }
     newIncome.user = user;
 
+    const shartnoma = await this.shartnomaRepo.findOneBy({
+      id: createIncomeDto.shartnoma_id,
+    });
+    if (!shartnoma) {
+      throw new NotFoundException('shartnoma topilmadi');
+    }
+    newIncome.shartnoma = shartnoma;
+
     await this.incomeRepo.save(newIncome);
     return new ApiResponse('Income created', 201);
   }
@@ -56,7 +68,7 @@ export class IncomeService {
     const totalItems = await this.incomeRepo.count();
     const pagination = new Pagination(totalItems, page, limit);
     const incomes = await this.incomeRepo.find({
-      where: search && { user: Like(`%${search}%`) },
+      where: search && { user: { F_I_O: Like(`%${search}%`) } },
       relations: ['user'],
       skip: pagination.offset,
       take: pagination.limit,
@@ -86,11 +98,24 @@ export class IncomeService {
       throw new BadGatewayException("income o'zgartira o'lmaysiz");
     }
 
-    const user = await this.userRepo.findOneBy({ id: updateIncomeDto.user_id });
-    if (!user) {
-      throw new NotFoundException('foydalanuvchi topilmadi');
+    if (!!updateIncomeDto.user_id) {
+      const user = await this.userRepo.findOneBy({
+        id: updateIncomeDto.user_id,
+      });
+      if (!user) {
+        throw new NotFoundException('foydalanuvchi topilmadi');
+      }
+      income.user = user;
     }
-    income.user = user;
+    if (!!updateIncomeDto.shartnoma_id) {
+      const shartnoma = await this.shartnomaRepo.findOneBy({
+        id: updateIncomeDto.shartnoma_id,
+      });
+      if (!shartnoma) {
+        throw new NotFoundException('shartnoma topilmadi');
+      }
+      income.shartnoma = shartnoma;
+    }
 
     Object.assign(income, updateIncomeDto);
     await this.incomeRepo.save(income);

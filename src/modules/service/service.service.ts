@@ -8,6 +8,7 @@ import { ApiResponse } from 'src/helpers/apiRespons';
 import { FindAllQuery } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
 import { Service } from './entities/service.entity';
+import { EnumServiceType } from 'src/helpers/enum';
 
 @Injectable()
 export class ServiceService {
@@ -24,17 +25,22 @@ export class ServiceService {
     return new ApiResponse('service yaratildi', 201);
   }
 
-  async findAll({ page, limit, search }: FindAllQuery) {
+  async findAll({ page, limit, search, type }: FindAllQuery) {
     const totalItems = await this.serviceRepo.count();
     const pagination = new Pagination(totalItems, page, limit);
 
-    const whereClause = search && {
-      title: Like(`%${search}%`),
-    };
+    const whereClause = [
+      {
+        title: Like(`%${search}%`),
+      },
+    ];
 
     const service = await this.serviceRepo.find({
       relations: ['shartnoma'],
-      where: whereClause,
+      where: whereClause &&
+        type !== EnumServiceType.other && {
+          serviceType: type || EnumServiceType.service,
+        },
       skip: pagination.offset,
       take: pagination.limit,
     });

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,6 +20,13 @@ export class UserService {
   ) {}
   async create(createUserDto: CreateUserDto) {
     const newUser = this.userRepo.create(createUserDto);
+
+    const user = await this.userRepo.findOne({
+      where: { phone: createUserDto.phone },
+    });
+    if (!!user) {
+      throw new BadRequestException('foydalanuvji yaratilgan');
+    }
 
     await this.userRepo.save(newUser);
 

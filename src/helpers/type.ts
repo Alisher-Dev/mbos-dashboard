@@ -1,9 +1,11 @@
 import { Request } from 'express';
+import { EnumServiceType } from './enum';
 
 export interface FindAllQuery {
   page?: number;
   limit?: number;
   search?: string;
+  type?: EnumServiceType;
 }
 
 export interface IPayload {

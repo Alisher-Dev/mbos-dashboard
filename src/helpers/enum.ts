@@ -31,4 +31,5 @@ export enum EnumIncamTpeTranslation {
 export enum EnumServiceType {
   service = 'service',
   product = 'product',
+  other = 'other',
 }

@@ -81,7 +81,12 @@ export class ShartnomaService {
     const totalItems = await this.shartnomeRepo.count();
     const pagination = new Pagination(totalItems, page, limit);
 
-    const whereClause = search ? { user: { F_I_O: Like(`%${search}%`) } } : {};
+    const whereClause = search
+      ? [
+          { user: { phone: Like(`%${search}%`) } },
+          { user: { F_I_O: Like(`%${search}%`) } },
+        ]
+      : {};
 
     const shartnoma = await this.shartnomeRepo.find({
       relations: ['user', 'income'],
@@ -107,7 +112,7 @@ export class ShartnomaService {
   async update(id: number, updateShartnomeDto: UpdateShartnomaDto) {
     const shartnoma = await this.shartnomeRepo.findOne({
       where: { id },
-      relations: ['income'],
+      relations: ['income', 'user', 'service'],
     });
 
     if (!shartnoma) {
@@ -116,20 +121,20 @@ export class ShartnomaService {
 
     Object.assign(shartnoma, updateShartnomeDto);
 
-    const user = await this.userRepo.findOneBy({
-      id: +updateShartnomeDto.user_id,
-    });
     if (!!updateShartnomeDto.user_id) {
+      const user = await this.userRepo.findOneBy({
+        id: +updateShartnomeDto.user_id,
+      });
       if (!user) {
         throw new NotFoundException('user_id mavjud emas');
       }
       shartnoma.user = user;
     }
 
-    const service = await this.serviceRepo.findOneBy({
-      id: +updateShartnomeDto.service_id,
-    });
     if (!!updateShartnomeDto.service_id) {
+      const service = await this.serviceRepo.findOneBy({
+        id: +updateShartnomeDto.service_id,
+      });
       if (!service) {
         throw new NotFoundException('service_id mavjud emas');
       }
@@ -138,7 +143,8 @@ export class ShartnomaService {
 
     if (updateShartnomeDto.advancePayment) {
       shartnoma.remainingPayment =
-        service.price * shartnoma.count - updateShartnomeDto.advancePayment;
+        shartnoma.service.price * shartnoma.count -
+        updateShartnomeDto.advancePayment;
 
       shartnoma.purchase_status =
         shartnoma.remainingPayment <= 0
@@ -148,11 +154,12 @@ export class ShartnomaService {
 
     if (updateShartnomeDto.advancePayment && updateShartnomeDto.paymentMethod) {
       const newIncome = {
-        amount: updateShartnomeDto.advancePayment || 0,
-        payment_method: updateShartnomeDto.paymentMethod as unknown,
+        amount: shartnoma.advancePayment || 0,
+        payment_method: shartnoma.paymentMethod as unknown,
         is_paid: 'paid',
         date: new Date(),
-        user: user,
+        user: shartnoma.user,
+        shartnoma: shartnoma,
       };
 
       const income = await this.incomeRepo.save(newIncome as any);
