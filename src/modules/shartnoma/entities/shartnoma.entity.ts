@@ -19,7 +19,10 @@ import {
 @Entity()
 export class Shartnoma extends RootEntity {
   @Column()
-  shartnoma_id: string;
+  shartnoma_nomer: string;
+
+  @Column({ type: 'int' })
+  shartnoma_id: number;
 
   @Column({ type: 'date' })
   sana: Date;

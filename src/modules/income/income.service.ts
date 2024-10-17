@@ -69,10 +69,10 @@ export class IncomeService {
     const pagination = new Pagination(totalItems, page, limit);
 
     const incomes = await this.incomeRepo.find({
-      where: [
-        { isDeleted: 0 },
-        search && { user: { F_I_O: Like(`%${search}%`) } },
-      ],
+      where: {
+        isDeleted: 0,
+        ...(search && { user: { F_I_O: Like(`%${search}%`) } }),
+      },
       relations: ['user', 'shartnoma'],
       skip: pagination.offset,
       take: pagination.limit,

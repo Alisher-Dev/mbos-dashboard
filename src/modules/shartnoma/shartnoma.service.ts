@@ -7,10 +7,8 @@ import { Like, Repository } from 'typeorm';
 import { ApiResponse } from 'src/helpers/apiRespons';
 import { FindAllQuery } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
-import { v4 } from 'uuid';
 import { User } from '../user/entities/user.entity';
 import { EnumShartnomaPaid } from 'src/helpers/enum';
-import { CreateIncomeDto } from '../income/dto/create-income.dto';
 import { Income } from '../income/entities/income.entity';
 import { Service } from '../service/entities/service.entity';
 
@@ -33,9 +31,6 @@ export class ShartnomaService {
   async create(createShartnomaDto: CreateShartnomaDto) {
     const newShartnoma = this.shartnomeRepo.create(createShartnomaDto);
 
-    const secretId = v4();
-    newShartnoma.shartnoma_id = secretId.slice(0, 6);
-
     const user = await this.userRepo.findOneBy({
       id: +createShartnomaDto.user_id,
     });
@@ -43,6 +38,19 @@ export class ShartnomaService {
       throw new NotFoundException('user_id mavjud emas');
     }
     newShartnoma.user = user;
+
+    const shartnomaOld = await this.shartnomeRepo.find({
+      order: { id: 'DESC' },
+    });
+    if (
+      new Date(shartnomaOld[0]?.sana).getFullYear() !== new Date().getFullYear()
+    ) {
+      newShartnoma.shartnoma_id = 1;
+    } else {
+      newShartnoma.shartnoma_id = shartnomaOld[0].shartnoma_id + 1;
+    }
+
+    newShartnoma.shartnoma_nomer = `${new Date(newShartnoma?.sana).getFullYear()}/${user.id}/${shartnomaOld[0]?.shartnoma_id}`;
 
     const service = await this.serviceRepo.findOneBy({
       id: +createShartnomaDto.service_id,
@@ -81,16 +89,12 @@ export class ShartnomaService {
     const totalItems = await this.shartnomeRepo.count();
     const pagination = new Pagination(totalItems, page, limit);
 
-    const whereClause = search
-      ? [
-          { user: { phone: Like(`%${search}%`) } },
-          { user: { F_I_O: Like(`%${search}%`) } },
-        ]
-      : {};
-
     const shartnoma = await this.shartnomeRepo.find({
       relations: ['user', 'income', 'service'],
-      where: { ...whereClause, isDeleted: 0 },
+      where: {
+        isDeleted: 0,
+        ...(search && { user: { F_I_O: Like(`%${search}%`) } }),
+      },
       skip: pagination.offset,
       take: pagination.limit,
     });
