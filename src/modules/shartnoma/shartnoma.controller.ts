@@ -8,12 +8,13 @@ import {
   Delete,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ShartnomaService } from './shartnoma.service';
 import { CreateShartnomaDto } from './dto/create-shartnoma.dto';
 import { UpdateShartnomaDto } from './dto/update-shartnoma.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { FindAllQuery } from 'src/helpers/type';
+import { FindAllQuery, IPayload } from 'src/helpers/type';
 import { AuthGuard } from 'src/helpers/authGuard';
 
 @Controller('shartnoma')
@@ -24,8 +25,8 @@ export class ShartnomaController {
 
   @Post()
   @UseGuards(AuthGuard)
-  create(@Body() createShartnomaDto: CreateShartnomaDto) {
-    return this.shartnomaService.create(createShartnomaDto);
+  create(@Body() createShartnomaDto: CreateShartnomaDto, @Req() req: IPayload) {
+    return this.shartnomaService.create(createShartnomaDto, req.userId);
   }
 
   @Get()
@@ -45,8 +46,9 @@ export class ShartnomaController {
   update(
     @Param('id') id: string,
     @Body() updateShartnomaDto: UpdateShartnomaDto,
+    @Req() req: IPayload,
   ) {
-    return this.shartnomaService.update(+id, updateShartnomaDto);
+    return this.shartnomaService.update(+id, updateShartnomaDto, req.userId);
   }
 
   @Delete(':id')

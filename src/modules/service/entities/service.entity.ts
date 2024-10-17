@@ -12,10 +12,7 @@ export class Service extends RootEntity {
   price: number;
 
   @Column({ nullable: true })
-  dona: string;
-
-  @Column({ nullable: true })
-  marta: string;
+  birliklar: string;
 
   @Column({ enum: EnumServiceType, type: 'enum' })
   serviceType: EnumServiceType;

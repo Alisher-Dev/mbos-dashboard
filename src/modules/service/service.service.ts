@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import { Shartnoma } from '../shartnoma/entities/shartnoma.entity';
 import { ApiResponse } from 'src/helpers/apiRespons';
-import { FindAllQuery } from 'src/helpers/type';
+import { FindAllQuery, IPayload } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
 import { Service } from './entities/service.entity';
 import { EnumServiceType } from 'src/helpers/enum';
@@ -17,9 +17,10 @@ export class ServiceService {
     private readonly serviceRepo: Repository<Service>,
   ) {}
 
-  async create(createServiceDto: CreateServiceDto) {
+  async create(createServiceDto: CreateServiceDto, userId: number) {
     const newService = this.serviceRepo.create(createServiceDto);
 
+    newService.whoCreated = userId.toString();
     await this.serviceRepo.save(newService);
 
     return new ApiResponse('service yaratildi', 201);
@@ -65,11 +66,13 @@ export class ServiceService {
     return new ApiResponse(service, 200);
   }
 
-  async update(id: number, updateServiceDto: UpdateServiceDto) {
+  async update(id: number, updateServiceDto: UpdateServiceDto, userId: number) {
     const service = await this.serviceRepo.findOne({
       where: { id, isDeleted: 0 },
       relations: ['shartnoma'],
     });
+
+    service.whoUpdated = userId.toString();
 
     if (!service && service.isDeleted) {
       throw new NotFoundException('service mavjud emas');

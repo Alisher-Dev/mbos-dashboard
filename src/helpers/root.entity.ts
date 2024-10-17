@@ -19,4 +19,10 @@ export class RootEntity {
 
   @Column({ default: 0, type: 'tinyint' })
   isDeleted: number;
+
+  @Column()
+  whoCreated: string;
+
+  @Column({ nullable: true })
+  whoUpdated: string;
 }

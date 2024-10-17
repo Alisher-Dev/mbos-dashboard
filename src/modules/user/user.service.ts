@@ -18,12 +18,15 @@ export class UserService {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
   ) {}
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto, userId: number) {
     const newUser = this.userRepo.create(createUserDto);
 
     const user = await this.userRepo.findOne({
       where: { phone: createUserDto.phone },
     });
+
+    newUser.whoCreated = userId.toString();
+
     if (!!user) {
       throw new BadRequestException('foydalanuvji yaratilgan');
     }
@@ -61,12 +64,14 @@ export class UserService {
     return new ApiResponse(user, 200);
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: number, updateUserDto: UpdateUserDto, userId: number) {
     const user = await this.userRepo.findOneBy({ id, isDeleted: 0 });
 
     if (!user && user.isDeleted) {
       throw new NotFoundException('foydalanuvchi mavjud emas');
     }
+
+    user.whoUpdated = userId.toString();
 
     Object.assign(user, updateUserDto);
 

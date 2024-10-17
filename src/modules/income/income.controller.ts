@@ -8,11 +8,12 @@ import {
   Delete,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { IncomeService } from './income.service';
 import { CreateIncomeDto } from './dto/create-income.dto';
 import { UpdateIncomeDto } from './dto/update-income.dto';
-import { FindAllQuery } from 'src/helpers/type';
+import { FindAllQuery, IPayload } from 'src/helpers/type';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/helpers/authGuard';
 
@@ -24,8 +25,8 @@ export class IncomeController {
 
   @Post()
   @UseGuards(AuthGuard)
-  create(@Body() createIncomeDto: CreateIncomeDto) {
-    return this.incomeService.create(createIncomeDto);
+  create(@Body() createIncomeDto: CreateIncomeDto, @Req() req: IPayload) {
+    return this.incomeService.create(createIncomeDto, req.userId);
   }
 
   @Get()
@@ -36,8 +37,12 @@ export class IncomeController {
 
   @Patch(':id')
   @UseGuards(AuthGuard)
-  update(@Param('id') id: string, @Body() updateIncomeDto: UpdateIncomeDto) {
-    return this.incomeService.update(+id, updateIncomeDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateIncomeDto: UpdateIncomeDto,
+    @Req() req: IPayload,
+  ) {
+    return this.incomeService.update(+id, updateIncomeDto, req.userId);
   }
 
   @Delete(':id')

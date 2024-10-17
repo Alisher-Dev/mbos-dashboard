@@ -38,6 +38,12 @@ export class AdminController {
     return this.adminService.Me(req.userId);
   }
 
+  @Get('getAdmin/:id')
+  @UseGuards(AuthGuard)
+  GetAdmin(@Param() id: { id: number }) {
+    return this.adminService.GetAdmin(+id);
+  }
+
   @Post('refresh')
   update(@Body() updateAdminDto: UpdateAdminDto) {
     return this.adminService.update(updateAdminDto);

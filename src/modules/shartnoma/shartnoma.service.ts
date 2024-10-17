@@ -28,12 +28,15 @@ export class ShartnomaService {
     private readonly serviceRepo: Repository<Service>,
   ) {}
 
-  async create(createShartnomaDto: CreateShartnomaDto) {
+  async create(createShartnomaDto: CreateShartnomaDto, userId: number) {
     const newShartnoma = this.shartnomeRepo.create(createShartnomaDto);
 
     const user = await this.userRepo.findOneBy({
       id: +createShartnomaDto.user_id,
     });
+
+    newShartnoma.whoCreated = userId.toString();
+
     if (!user) {
       throw new NotFoundException('user_id mavjud emas');
     }
@@ -74,6 +77,7 @@ export class ShartnomaService {
       is_paid: 'paid',
       date: new Date(),
       user: user,
+      whoCreated: userId.toString(),
     };
 
     const income = await this.incomeRepo.save(newIncome as any);
@@ -113,11 +117,17 @@ export class ShartnomaService {
     return new ApiResponse(shartnoma, 200);
   }
 
-  async update(id: number, updateShartnomeDto: UpdateShartnomaDto) {
+  async update(
+    id: number,
+    updateShartnomeDto: UpdateShartnomaDto,
+    userId: number,
+  ) {
     const shartnoma = await this.shartnomeRepo.findOne({
       where: { id, isDeleted: 0 },
       relations: ['income', 'user', 'service'],
     });
+
+    shartnoma.whoUpdated = userId.toString();
 
     if (!shartnoma && shartnoma.isDeleted) {
       throw new NotFoundException('shartnoma mavjud emas');
@@ -164,6 +174,7 @@ export class ShartnomaService {
         date: new Date(),
         user: shartnoma.user,
         shartnoma: shartnoma,
+        whoCreated: userId.toString(),
       };
 
       const income = await this.incomeRepo.save(newIncome as any);

@@ -28,8 +28,9 @@ export class IncomeService {
     private readonly shartnomaRepo: Repository<Shartnoma>,
   ) {}
 
-  async create(createIncomeDto: CreateIncomeDto) {
+  async create(createIncomeDto: CreateIncomeDto, userId: number) {
     const newIncome = this.incomeRepo.create(createIncomeDto);
+    newIncome.whoCreated = userId.toString();
     newIncome.date = new Date(createIncomeDto.date);
     if (
       createIncomeDto.is_paid === EnumIncamIsPaid.paid &&
@@ -80,9 +81,14 @@ export class IncomeService {
     return new ApiResponse(incomes, 200, pagination);
   }
 
-  async update(id: number, updateIncomeDto: Partial<CreateIncomeDto>) {
+  async update(
+    id: number,
+    updateIncomeDto: Partial<CreateIncomeDto>,
+    userId: number,
+  ) {
     const income = await this.incomeRepo.findOneBy({ id });
 
+    income.whoUpdated = userId.toString();
     if (!income) {
       throw new NotFoundException('income mavjud emas');
     }

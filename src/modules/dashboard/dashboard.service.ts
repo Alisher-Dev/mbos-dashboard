@@ -170,28 +170,28 @@ export class DashboardService {
       .andWhere('service.isDeleted = :isDeleted', { isDeleted: 0 })
       .getOne();
 
-    const tugallanganCount = servicesTugallangan.shartnoma.reduce(
-      (total, shartnoma) => (total += shartnoma.count),
+    const tugallanganCount = servicesTugallangan?.shartnoma?.reduce(
+      (total, shartnoma) => (total += shartnoma?.count),
       0,
     );
 
-    const jarayondagiCount = servicesJarayondagi.shartnoma.reduce(
-      (total, shartnoma) => (total += shartnoma.count),
+    const jarayondagiCount = servicesJarayondagi?.shartnoma?.reduce(
+      (total, shartnoma) => (total += shartnoma?.count),
       0,
     );
 
-    const umumiyTushum = servicesTugallangan.shartnoma
-      .map((el) => el.count * servicesTugallangan.price)
-      .reduce((total, amount) => total + amount, 0);
+    const umumiyTushum = servicesTugallangan?.shartnoma
+      ?.map((el) => el.count * servicesTugallangan.price)
+      ?.reduce((total, amount) => total + amount, 0);
 
-    const umumiyTushumCount = servicesTugallangan.shartnoma
-      .map((el) => el.count)
-      .reduce((total, amount) => total + amount, 0);
+    const umumiyTushumCount = servicesTugallangan?.shartnoma
+      ?.map((el) => el.count)
+      ?.reduce((total, amount) => total + amount, 0);
 
     return new ApiResponse({
-      tugallangan: servicesTugallangan.shartnoma,
+      tugallangan: servicesTugallangan?.shartnoma,
       tugallanganCount,
-      jarayondagi: servicesJarayondagi.shartnoma,
+      jarayondagi: servicesJarayondagi?.shartnoma,
       jarayondagiCount,
       umumiyTushum,
       umumiyTushumCount,

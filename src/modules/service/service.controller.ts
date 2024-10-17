@@ -8,11 +8,12 @@ import {
   Delete,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ServiceService } from './service.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
-import { FindAllQuery } from 'src/helpers/type';
+import { FindAllQuery, IPayload } from 'src/helpers/type';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/helpers/authGuard';
 
@@ -23,8 +24,8 @@ export class ServiceController {
 
   @Post()
   @UseGuards(AuthGuard)
-  create(@Body() createServiceDto: CreateServiceDto) {
-    return this.serviceService.create(createServiceDto);
+  create(@Body() createServiceDto: CreateServiceDto, @Req() req: IPayload) {
+    return this.serviceService.create(createServiceDto, req.userId);
   }
 
   @Get()
@@ -41,8 +42,12 @@ export class ServiceController {
 
   @Patch(':id')
   @UseGuards(AuthGuard)
-  update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) {
-    return this.serviceService.update(+id, updateServiceDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateServiceDto: UpdateServiceDto,
+    @Req() req: IPayload,
+  ) {
+    return this.serviceService.update(+id, updateServiceDto, req.userId);
   }
 
   @Delete(':id')
