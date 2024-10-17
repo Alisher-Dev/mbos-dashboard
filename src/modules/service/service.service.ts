@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Search } from '@nestjs/common';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,21 +26,27 @@ export class ServiceService {
   }
 
   async findAll({ page, limit, search, type }: FindAllQuery) {
-    const totalItems = await this.serviceRepo.count();
-    const pagination = new Pagination(totalItems, page, limit);
-
-    const whereClause = [
-      {
-        title: Like(`%${search}%`),
+    const totalItems = await this.serviceRepo.count({
+      where: {
+        isDeleted: 0,
+        ...(search && { title: Like(`%${search}%`) }),
+        ...(type !== EnumServiceType.other && {
+          serviceType: type || EnumServiceType.service,
+        }),
       },
-    ];
+    });
+
+    const pagination = new Pagination(totalItems, page, limit);
 
     const service = await this.serviceRepo.find({
       relations: ['shartnoma'],
-      where: whereClause &&
-        type !== EnumServiceType.other && {
+      where: {
+        isDeleted: 0,
+        ...(search && { title: Like(`%${search}%`) }),
+        ...(type !== EnumServiceType.other && {
           serviceType: type || EnumServiceType.service,
-        },
+        }),
+      },
       skip: pagination.offset,
       take: pagination.limit,
     });
@@ -51,7 +57,7 @@ export class ServiceService {
   async findOne(id: number) {
     const service = await this.serviceRepo.findOne({
       relations: ['shartnoma'],
-      where: { id },
+      where: { id, isDeleted: 0 },
     });
     if (!service) {
       throw new NotFoundException('service mavjud emas');
@@ -61,11 +67,11 @@ export class ServiceService {
 
   async update(id: number, updateServiceDto: UpdateServiceDto) {
     const service = await this.serviceRepo.findOne({
-      where: { id },
+      where: { id, isDeleted: 0 },
       relations: ['shartnoma'],
     });
 
-    if (!service) {
+    if (!service && service.isDeleted) {
       throw new NotFoundException('service mavjud emas');
     }
 
@@ -80,7 +86,7 @@ export class ServiceService {
     if (!service) {
       throw new NotFoundException('service mavjud emas');
     }
-    await this.serviceRepo.delete(id);
+    await this.serviceRepo.save({ ...service, isDeleted: 1 });
     return new ApiResponse(`service o'chirildi`);
   }
 }

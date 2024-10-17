@@ -3,9 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { Income } from '../income/entities/income.entity';
-import { EnumIncamIsPaid } from 'src/helpers/enum';
+import { EnumIncamIsPaid, EnumShartnomaPaid } from 'src/helpers/enum';
 import { ApiResponse } from 'src/helpers/apiRespons';
 import { Shartnoma } from '../shartnoma/entities/shartnoma.entity';
+import { Service } from '../service/entities/service.entity';
 
 @Injectable()
 export class DashboardService {
@@ -18,6 +19,9 @@ export class DashboardService {
 
     @InjectRepository(Shartnoma)
     private readonly shartnomaRepo: Repository<Shartnoma>,
+
+    @InjectRepository(Service)
+    private readonly serviceRepo: Repository<Service>,
   ) {}
 
   async find() {
@@ -27,12 +31,14 @@ export class DashboardService {
       .createQueryBuilder('income')
       .select('SUM(income.amount)', 'total')
       .where('income.is_paid = :isPaid', { isPaid: EnumIncamIsPaid.paid })
+      .andWhere('income.isDeleted = :isDeleted', { isDeleted: 0 })
       .getRawOne();
 
     const expend = await this.incomeRepo
       .createQueryBuilder('income')
       .select('SUM(income.amount)', 'total')
       .where('income.is_paid = :isPaid', { isPaid: EnumIncamIsPaid.no_paid })
+      .andWhere('income.isDeleted = :isDeleted', { isDeleted: 0 })
       .getRawOne();
 
     const recentContract = await this.shartnomaRepo.find({
@@ -53,6 +59,7 @@ export class DashboardService {
       .select('SUM(tushum.amount)', 'total')
       .where('tushum.is_paid = :paid', { paid: EnumIncamIsPaid.paid })
       .andWhere('tushum.payment_method = :method', { method: 'cash' })
+      .andWhere('tushum.isDeleted = :isDeleted', { isDeleted: 0 })
       .getRawOne();
 
     const translation = await this.incomeRepo
@@ -60,6 +67,7 @@ export class DashboardService {
       .select('SUM(tushum.amount)', 'total')
       .where('tushum.is_paid = :paid', { paid: EnumIncamIsPaid.paid })
       .andWhere('tushum.payment_method = :method', { method: 'translation' })
+      .andWhere('tushum.isDeleted = :isDeleted', { isDeleted: 0 })
       .getRawOne();
 
     const online = await this.incomeRepo
@@ -67,6 +75,7 @@ export class DashboardService {
       .select('SUM(tushum.amount)', 'total')
       .where('tushum.is_paid = :paid', { paid: EnumIncamIsPaid.paid })
       .andWhere('tushum.payment_method = :method', { method: 'online' })
+      .andWhere('tushum.isDeleted = :isDeleted', { isDeleted: 0 })
       .getRawOne();
 
     const otherTushum = await this.incomeRepo
@@ -74,6 +83,7 @@ export class DashboardService {
       .select('SUM(tushum.amount)', 'total')
       .where('tushum.is_paid = :paid', { paid: EnumIncamIsPaid.paid })
       .andWhere('tushum.payment_method = :method', { method: 'other' })
+      .andWhere('tushum.isDeleted = :isDeleted', { isDeleted: 0 })
       .getRawOne();
 
     const salary = await this.incomeRepo
@@ -81,6 +91,7 @@ export class DashboardService {
       .select('SUM(chikim.amount)', 'total')
       .where('chikim.is_paid = :paid', { paid: EnumIncamIsPaid.no_paid })
       .andWhere('chikim.payment_method = :method', { method: 'salary' })
+      .andWhere('chikim.isDeleted = :isDeleted', { isDeleted: 0 })
       .getRawOne();
 
     const delivery = await this.incomeRepo
@@ -88,6 +99,7 @@ export class DashboardService {
       .select('SUM(chikim.amount)', 'total')
       .where('chikim.is_paid = :paid', { paid: EnumIncamIsPaid.no_paid })
       .andWhere('chikim.payment_method = :method', { method: 'delivery' })
+      .andWhere('chikim.isDeleted = :isDeleted', { isDeleted: 0 })
       .getRawOne();
 
     const otherChikim = await this.incomeRepo
@@ -95,6 +107,7 @@ export class DashboardService {
       .select('SUM(chikim.amount)', 'total')
       .where('chikim.is_paid = :paid', { paid: EnumIncamIsPaid.no_paid })
       .andWhere('chikim.payment_method = :method', { method: 'other' })
+      .andWhere('chikim.isDeleted = :isDeleted', { isDeleted: 0 })
       .getRawOne();
 
     return new ApiResponse({
@@ -115,7 +128,7 @@ export class DashboardService {
   async findStatstik() {
     const stats = await this.incomeRepo
       .createQueryBuilder('income')
-      .select("DATE_FORMAT(income.date, '%Y-%m') AS date") // Format date as YYYY-MM
+      .select("DATE_FORMAT(income.date, '%Y-%m') AS date")
       .addSelect(
         'SUM(CASE WHEN income.is_paid = :paid THEN income.amount ELSE 0 END)',
         'tushum',
@@ -128,10 +141,60 @@ export class DashboardService {
         paid: EnumIncamIsPaid.paid,
         no_paid: EnumIncamIsPaid.no_paid,
       })
-      .groupBy("DATE_FORMAT(income.date, '%Y-%m')") // Group by formatted date
-      .orderBy("DATE_FORMAT(income.date, '%Y-%m')", 'ASC') // Optional: Order by date
-      .getRawMany(); // Use getRawMany to get raw results
+      .groupBy("DATE_FORMAT(income.date, '%Y-%m')")
+      .orderBy("DATE_FORMAT(income.date, '%Y-%m')", 'ASC')
+      .andWhere('income.isDeleted = :isDeleted', { isDeleted: 0 })
+      .getRawMany();
 
     return new ApiResponse(stats);
+  }
+
+  async findServiceDash(id: number) {
+    const servicesTugallangan = await this.serviceRepo
+      .createQueryBuilder('service')
+      .leftJoinAndSelect('service.shartnoma', 'shartnoma')
+      .where('service.id = :id', { id })
+      .andWhere('shartnoma.purchase_status = :purchase_status', {
+        purchase_status: EnumShartnomaPaid.paid,
+      })
+      .andWhere('service.isDeleted = :isDeleted', { isDeleted: 0 })
+      .getOne();
+
+    const servicesJarayondagi = await this.serviceRepo
+      .createQueryBuilder('service')
+      .leftJoinAndSelect('service.shartnoma', 'shartnoma')
+      .where('service.id = :id', { id })
+      .andWhere('shartnoma.purchase_status = :purchase_status', {
+        purchase_status: EnumShartnomaPaid.no_paid,
+      })
+      .andWhere('service.isDeleted = :isDeleted', { isDeleted: 0 })
+      .getOne();
+
+    const tugallanganCount = servicesTugallangan.shartnoma.reduce(
+      (total, shartnoma) => (total += shartnoma.count),
+      0,
+    );
+
+    const jarayondagiCount = servicesJarayondagi.shartnoma.reduce(
+      (total, shartnoma) => (total += shartnoma.count),
+      0,
+    );
+
+    const umumiyTushum = servicesTugallangan.shartnoma
+      .map((el) => el.count * servicesTugallangan.price)
+      .reduce((total, amount) => total + amount, 0);
+
+    const umumiyTushumCount = servicesTugallangan.shartnoma
+      .map((el) => el.count)
+      .reduce((total, amount) => total + amount, 0);
+
+    return new ApiResponse({
+      tugallangan: servicesTugallangan.shartnoma,
+      tugallanganCount,
+      jarayondagi: servicesJarayondagi.shartnoma,
+      jarayondagiCount,
+      umumiyTushum,
+      umumiyTushumCount,
+    });
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/helpers/authGuard';
@@ -24,5 +24,11 @@ export class DashboardController {
   @UseGuards(AuthGuard)
   findStatistik() {
     return this.dashboardService.findStatstik();
+  }
+
+  @Get('/serviceDash/:id')
+  @UseGuards(AuthGuard)
+  findServiceDash(@Param() { id }: { id: number }) {
+    return this.dashboardService.findServiceDash(id);
   }
 }

@@ -1,7 +1,7 @@
 import { EnumServiceType } from 'src/helpers/enum';
 import { RootEntity } from 'src/helpers/root.entity';
 import { Shartnoma } from 'src/modules/shartnoma/entities/shartnoma.entity';
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 
 @Entity()
 export class Service extends RootEntity {
@@ -12,7 +12,7 @@ export class Service extends RootEntity {
   price: number;
 
   @Column({ nullable: true })
-  kg: string;
+  dona: string;
 
   @Column({ nullable: true })
   marta: string;

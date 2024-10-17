@@ -17,7 +17,7 @@ export class CreateServiceDto {
 
   @IsString()
   @IsOptional()
-  kg: string;
+  dona: string;
 
   @IsString()
   @IsOptional()

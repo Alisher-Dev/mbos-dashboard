@@ -3,6 +3,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  Column,
 } from 'typeorm';
 
 @Entity()
@@ -15,4 +16,7 @@ export class RootEntity {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  @Column({ default: 0 })
+  isDeleted: number;
 }

@@ -42,7 +42,7 @@ export class UserService {
       : {};
 
     const user = await this.userRepo.find({
-      where: whereClause,
+      where: { ...whereClause, isDeleted: 0 },
       skip: pagination.offset,
       take: pagination.limit,
     });
@@ -52,8 +52,8 @@ export class UserService {
 
   async findOne(id: number) {
     const user = await this.userRepo.findOne({
-      relations: ['shartnome', 'income'],
-      where: { id },
+      relations: { shartnome: { service: true }, income: true },
+      where: { id, isDeleted: 0 },
     });
     if (!user) {
       throw new NotFoundException('foydalanuvchi mavjud emas');
@@ -62,9 +62,9 @@ export class UserService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const user = await this.userRepo.findOneBy({ id });
+    const user = await this.userRepo.findOneBy({ id, isDeleted: 0 });
 
-    if (!user) {
+    if (!user && user.isDeleted) {
       throw new NotFoundException('foydalanuvchi mavjud emas');
     }
 
@@ -79,7 +79,7 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('foydalanuvchi mavjud emas');
     }
-    await this.userRepo.delete(id);
+    await this.userRepo.save({ ...user, isDeleted: 1 });
     return new ApiResponse(`foydalanuvchi o'chirildi`);
   }
 }

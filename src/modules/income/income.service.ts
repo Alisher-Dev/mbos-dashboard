@@ -67,9 +67,13 @@ export class IncomeService {
   async findAll({ page, limit, search }: FindAllQuery) {
     const totalItems = await this.incomeRepo.count();
     const pagination = new Pagination(totalItems, page, limit);
+
     const incomes = await this.incomeRepo.find({
-      where: search && { user: { F_I_O: Like(`%${search}%`) } },
-      relations: ['user'],
+      where: [
+        { isDeleted: 0 },
+        search && { user: { F_I_O: Like(`%${search}%`) } },
+      ],
+      relations: ['user', 'shartnoma'],
       skip: pagination.offset,
       take: pagination.limit,
     });
@@ -129,7 +133,7 @@ export class IncomeService {
       throw new NotFoundException('Income mavjud emas');
     }
 
-    await this.incomeRepo.delete(id);
+    await this.incomeRepo.save({ ...income, isDeleted: 1 });
     return new ApiResponse("Income o'chirildi");
   }
 }

@@ -89,8 +89,8 @@ export class ShartnomaService {
       : {};
 
     const shartnoma = await this.shartnomeRepo.find({
-      relations: ['user', 'income'],
-      where: whereClause,
+      relations: ['user', 'income', 'service'],
+      where: { ...whereClause, isDeleted: 0 },
       skip: pagination.offset,
       take: pagination.limit,
     });
@@ -101,7 +101,7 @@ export class ShartnomaService {
   async findOne(id: number) {
     const shartnoma = await this.shartnomeRepo.findOne({
       relations: ['user', 'income', 'service'],
-      where: { id },
+      where: { id, isDeleted: 0 },
     });
     if (!shartnoma) {
       throw new NotFoundException('shartnoma mavjud emas');
@@ -111,11 +111,11 @@ export class ShartnomaService {
 
   async update(id: number, updateShartnomeDto: UpdateShartnomaDto) {
     const shartnoma = await this.shartnomeRepo.findOne({
-      where: { id },
+      where: { id, isDeleted: 0 },
       relations: ['income', 'user', 'service'],
     });
 
-    if (!shartnoma) {
+    if (!shartnoma && shartnoma.isDeleted) {
       throw new NotFoundException('shartnoma mavjud emas');
     }
 
@@ -176,7 +176,7 @@ export class ShartnomaService {
     if (!shartnoma) {
       throw new NotFoundException('shartnoma mavjud emas');
     }
-    await this.shartnomeRepo.delete(id);
+    await this.shartnomeRepo.save({ ...shartnoma, isDeleted: 1 });
     return new ApiResponse(`shartnoma o'chirildi`);
   }
 }
