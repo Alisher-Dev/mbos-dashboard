@@ -17,9 +17,10 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
           script: |
-            cd home/mbos-dashboard/
-            git fetch
-            git pull
-            yarn install
-            yarn build
-            pm2 start dist/main.js
+            cd /home/mbos-dashboard || exit 1  # Перейти в директорию проекта, выходить, если не удалось
+            pm2 delete server || true           # Удаляем процесс, если он существует
+            git fetch                            # Получаем обновления
+            git pull                             # Сливаем обновления
+            yarn install                         # Устанавливаем зависимости
+            yarn build                           # Строим проект
+            pm2 start dist/main.js              # Запускаем приложение
