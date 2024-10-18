@@ -17,9 +17,20 @@ export class CreateServiceDto {
 
   @IsString()
   @IsOptional()
-  dona: string;
+  birliklar: string;
 
   @IsString()
   @IsOptional()
-  marta: string;
+  @ApiProperty()
+  whoCreated: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  whoUpdated: string;
+
+  @IsNumber()
+  @IsOptional()
+  @ApiProperty()
+  isDeleted: number;
 }

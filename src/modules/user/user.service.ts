@@ -7,7 +7,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Like, Repository } from 'typeorm';
+import { Brackets, Like, Repository } from 'typeorm';
 import { ApiResponse } from 'src/helpers/apiRespons';
 import { Pagination } from 'src/helpers/pagination';
 import { FindAllQuery } from 'src/helpers/type';
@@ -37,20 +37,26 @@ export class UserService {
   }
 
   async findAll({ page, limit, search }: FindAllQuery) {
-    const totalItems = await this.userRepo.count();
+    const queryBuilder = this.userRepo.createQueryBuilder('user');
+
+    const [users, totalItems] = await queryBuilder
+      .where('user.isDeleted = :isDeleted', { isDeleted: 0 })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('user.F_I_O LIKE :search', {
+            search: `%${search}%`,
+          }).orWhere('CAST(user.phone AS CHAR) LIKE :search', {
+            search: `%${search}%`,
+          });
+        }),
+      )
+      .take(limit)
+      .skip((page - 1) * limit)
+      .getManyAndCount();
+
     const pagination = new Pagination(totalItems, page, limit);
 
-    const whereClause = search
-      ? [{ phone: Like(`%${search}%`) }, { F_I_O: Like(`%${search}%`) }]
-      : {};
-
-    const user = await this.userRepo.find({
-      where: { ...whereClause, isDeleted: 0 },
-      skip: pagination.offset,
-      take: pagination.limit,
-    });
-
-    return new ApiResponse(user, 200, pagination);
+    return new ApiResponse(users, 200, pagination);
   }
 
   async findOne(id: number) {

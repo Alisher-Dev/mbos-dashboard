@@ -25,7 +25,7 @@ export class DashboardService {
   ) {}
 
   async find() {
-    const usersCount = await this.userRepo.count();
+    const usersCount = await this.userRepo.count({ where: { isDeleted: 0 } });
 
     const income = await this.incomeRepo
       .createQueryBuilder('income')

@@ -18,6 +18,26 @@ export class CreateShartnomaDto {
   @ApiProperty()
   sana: string;
 
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  shartnoma_nomer: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  whoCreated: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  whoUpdated: string;
+
+  @IsNumber()
+  @IsOptional()
+  @ApiProperty()
+  isDeleted: number;
+
   @IsEnum(EnumShartnoma)
   @IsOptional()
   @ApiProperty()

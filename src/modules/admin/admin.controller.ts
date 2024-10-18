@@ -40,8 +40,8 @@ export class AdminController {
 
   @Get('getAdmin/:id')
   @UseGuards(AuthGuard)
-  GetAdmin(@Param() id: { id: number }) {
-    return this.adminService.GetAdmin(+id);
+  GetAdmin(@Param() param: { id: number }) {
+    return this.adminService.GetAdmin(param.id);
   }
 
   @Post('refresh')

@@ -63,19 +63,22 @@ export class AdminService {
   }
 
   async Me(id: number) {
-    const admin = await this.adminRepo.findOneBy({ id });
+    const admin = await this.adminRepo.findOne({ where: { id } });
     if (!admin) {
       throw new NotFoundException('admin topilmadi');
     }
-    return new ApiResponse(admin);
+    return new ApiResponse({ ...admin, token: null });
   }
 
   async GetAdmin(id: number) {
-    const admin = await this.adminRepo.findOneBy({ id });
+    const admin = await this.adminRepo.findOne({ where: { id: id } });
+
     if (!admin) {
       throw new NotFoundException('admin topilmadi');
     }
-    return new ApiResponse(admin);
+
+    const { password, token, ...adminData } = admin;
+    return new ApiResponse({ ...adminData });
   }
 
   async update(body: UpdateAdminDto) {

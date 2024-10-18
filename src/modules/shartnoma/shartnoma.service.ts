@@ -3,7 +3,7 @@ import { CreateShartnomaDto } from './dto/create-shartnoma.dto';
 import { UpdateShartnomaDto } from './dto/update-shartnoma.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Shartnoma } from './entities/shartnoma.entity';
-import { Like, Repository } from 'typeorm';
+import { Brackets, Like, Repository } from 'typeorm';
 import { ApiResponse } from 'src/helpers/apiRespons';
 import { FindAllQuery } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
@@ -53,7 +53,7 @@ export class ShartnomaService {
       newShartnoma.shartnoma_id = shartnomaOld[0].shartnoma_id + 1;
     }
 
-    newShartnoma.shartnoma_nomer = `${new Date(newShartnoma?.sana).getFullYear()}/${user.id}/${shartnomaOld[0]?.shartnoma_id}`;
+    newShartnoma.shartnoma_nomer = `${new Date(newShartnoma?.sana).getFullYear()}/${user.id}/${shartnomaOld[0]?.shartnoma_id || 1}`;
 
     const service = await this.serviceRepo.findOneBy({
       id: +createShartnomaDto.service_id,
@@ -93,15 +93,23 @@ export class ShartnomaService {
     const totalItems = await this.shartnomeRepo.count();
     const pagination = new Pagination(totalItems, page, limit);
 
-    const shartnoma = await this.shartnomeRepo.find({
-      relations: ['user', 'income', 'service'],
-      where: {
-        isDeleted: 0,
-        ...(search && { user: { F_I_O: Like(`%${search}%`) } }),
-      },
-      skip: pagination.offset,
-      take: pagination.limit,
-    });
+    const shartnoma = await this.shartnomeRepo
+      .createQueryBuilder('shartnoma')
+      .where('shartnoma.isDeleted = :isDeleted', { isDeleted: 0 })
+      .leftJoinAndSelect('shartnoma.user', 'user')
+      .leftJoinAndSelect('shartnoma.service', 'service')
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('user.F_I_O LIKE :F_I_O', {
+            F_I_O: `%${search}%`,
+          }).orWhere('CAST(user.phone AS CHAR) LIKE :phone', {
+            phone: `%${search}%`,
+          });
+        }),
+      )
+      .take(limit)
+      .skip((page - 1) * limit)
+      .getMany();
 
     return new ApiResponse(shartnoma, 200, pagination);
   }
@@ -126,8 +134,6 @@ export class ShartnomaService {
       where: { id, isDeleted: 0 },
       relations: ['income', 'user', 'service'],
     });
-
-    shartnoma.whoUpdated = userId.toString();
 
     if (!shartnoma && shartnoma.isDeleted) {
       throw new NotFoundException('shartnoma mavjud emas');
@@ -181,6 +187,8 @@ export class ShartnomaService {
 
       shartnoma.income = [...shartnoma.income, income];
     }
+
+    shartnoma.whoUpdated = userId.toString();
 
     await this.shartnomeRepo.save(shartnoma);
     return new ApiResponse(`shartnoma o'gartirildi`, 201);

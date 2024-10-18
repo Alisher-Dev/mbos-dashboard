@@ -72,14 +72,13 @@ export class ServiceService {
       relations: ['shartnoma'],
     });
 
-    service.whoUpdated = userId.toString();
-
     if (!service && service.isDeleted) {
       throw new NotFoundException('service mavjud emas');
     }
 
     Object.assign(service, updateServiceDto);
 
+    service.whoUpdated = userId.toString();
     await this.serviceRepo.save(service);
     return new ApiResponse(`service o'gartirildi`, 201);
   }
