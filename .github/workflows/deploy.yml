@@ -1,0 +1,26 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [master] # Убедитесь, что вы пушите в нужную ветку
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Подключение к VPS и деплой
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd ~/mbos-dashboard
+            pm2 delete server || true # Если процесс не запущен, просто продолжим
+            git fetch
+            git pull
+            yarn install
+            yarn build
+            pm2 start dist/main.js # Измените на правильный путь к вашему стартовому файлу
