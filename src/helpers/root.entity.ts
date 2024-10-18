@@ -17,7 +17,7 @@ export class RootEntity {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @Column({ default: 0, type: 'tinyint' })
+  @Column({ default: 0, type: 'int' })
   isDeleted: number;
 
   @Column()

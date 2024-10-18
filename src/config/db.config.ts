@@ -7,7 +7,7 @@ import { Admin } from 'src/modules/admin/entities/admin.entity';
 import { Service } from 'src/modules/service/entities/service.entity';
 
 export const dbConfig: TypeOrmModuleOptions = {
-  type: 'mysql',
+  type: 'postgres',
   host: envConfig.database.host,
   port: envConfig.database.port,
   username: envConfig.database.user,
