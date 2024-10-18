@@ -18,7 +18,6 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd home/mbos-dashboard/
-            pm2 delete server || true
             git fetch
             git pull
             yarn install
