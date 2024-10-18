@@ -18,9 +18,9 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd ~/mbos-dashboard
-            pm2 delete server || true # Если процесс не запущен, просто продолжим
+            pm2 delete server || true 
             git fetch
             git pull
             yarn install
             yarn build
-            pm2 start dist/main.js # Измените на правильный путь к вашему стартовому файлу
+            pm2 start dist/main.js
