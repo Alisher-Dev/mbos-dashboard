@@ -60,13 +60,29 @@ export class UserService {
   }
 
   async findOne(id: number) {
-    const user = await this.userRepo.findOne({
-      relations: { shartnome: { service: true }, income: true },
-      where: { id, isDeleted: 0 },
-    });
+    const user = await this.userRepo
+      .createQueryBuilder('user')
+      .leftJoinAndSelect(
+        'user.shartnome',
+        'shartnome',
+        'shartnome.isDeleted = :isDeleted',
+        { isDeleted: 0 },
+      )
+      .leftJoinAndSelect('shartnome.service', 'service')
+      .leftJoinAndSelect(
+        'user.income',
+        'income',
+        'income.isDeleted = :isDeleted',
+        { isDeleted: 0 },
+      )
+      .where('user.id = :id', { id })
+      .andWhere('user.isDeleted = :isDeleted', { isDeleted: 0 })
+      .getOne();
+
     if (!user) {
       throw new NotFoundException('foydalanuvchi mavjud emas');
     }
+
     return new ApiResponse(user, 200);
   }
 

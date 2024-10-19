@@ -40,7 +40,6 @@ export class ServiceService {
     const pagination = new Pagination(totalItems, page, limit);
 
     const service = await this.serviceRepo.find({
-      relations: ['shartnoma'],
       where: {
         isDeleted: 0,
         ...(search && { title: Like(`%${search}%`) }),
@@ -56,10 +55,17 @@ export class ServiceService {
   }
 
   async findOne(id: number) {
-    const service = await this.serviceRepo.findOne({
-      relations: ['shartnoma'],
-      where: { id, isDeleted: 0 },
-    });
+    const service = await this.serviceRepo
+      .createQueryBuilder('service')
+      .where('service.isDeleted = :isDeleted', { isDeleted: 0 })
+      .leftJoinAndSelect(
+        'shartnoma.service',
+        'service',
+        'service.isDeleted = :isDeleted',
+        { isDeleted: 0 },
+      )
+      .getOne();
+
     if (!service) {
       throw new NotFoundException('service mavjud emas');
     }

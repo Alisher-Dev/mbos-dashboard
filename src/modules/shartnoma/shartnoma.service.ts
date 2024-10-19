@@ -97,7 +97,18 @@ export class ShartnomaService {
       .createQueryBuilder('shartnoma')
       .where('shartnoma.isDeleted = :isDeleted', { isDeleted: 0 })
       .leftJoinAndSelect('shartnoma.user', 'user')
-      .leftJoinAndSelect('shartnoma.service', 'service')
+      .leftJoinAndSelect(
+        'shartnoma.user',
+        'user',
+        'user.isDeleted = :isDeleted',
+        { isDeleted: 0 },
+      )
+      .leftJoinAndSelect(
+        'shartnoma.service',
+        'service',
+        'service.isDeleted = :isDeleted',
+        { isDeleted: 0 },
+      )
       .andWhere(
         new Brackets((qb) => {
           qb.where('user.F_I_O LIKE :F_I_O', {
@@ -115,10 +126,30 @@ export class ShartnomaService {
   }
 
   async findOne(id: number) {
-    const shartnoma = await this.shartnomeRepo.findOne({
-      relations: ['user', 'income', 'service'],
-      where: { id, isDeleted: 0 },
-    });
+    const shartnoma = await this.shartnomeRepo
+      .createQueryBuilder('shartnoma')
+      .leftJoinAndSelect(
+        'shartnoma.income',
+        'income',
+        'income.isDeleted = :isDeleted',
+        { isDeleted: 0 },
+      )
+      .leftJoinAndSelect(
+        'shartnome.service',
+        'service',
+        'service.isDeleted = :isDeleted',
+        { isDeleted: 0 },
+      )
+      .leftJoinAndSelect(
+        'shartnoma.user',
+        'user',
+        'user.isDeleted = :isDeleted',
+        { isDeleted: 0 },
+      )
+      .where('shartnoma.id = :id', { id })
+      .andWhere('shartnoma.isDeleted = :isDeleted', { isDeleted: 0 })
+      .getOne();
+
     if (!shartnoma) {
       throw new NotFoundException('shartnoma mavjud emas');
     }
