@@ -126,19 +126,19 @@ export class ShartnomaService {
     const shartnoma = await this.shartnomeRepo
       .createQueryBuilder('shartnoma')
       .leftJoinAndSelect(
-        'shartnoma.income',
+        'shartnoma.income', // Присоединяем income
         'income',
         'income.isDeleted = :isDeleted',
         { isDeleted: 0 },
       )
       .leftJoinAndSelect(
-        'shartnome.service',
+        'shartnoma.service', // Исправлено на shartnoma
         'service',
         'service.isDeleted = :isDeleted',
         { isDeleted: 0 },
       )
       .leftJoinAndSelect(
-        'shartnoma.user',
+        'shartnoma.user', // Присоединяем пользователя
         'user',
         'user.isDeleted = :isDeleted',
         { isDeleted: 0 },
@@ -148,9 +148,10 @@ export class ShartnomaService {
       .getOne();
 
     if (!shartnoma) {
-      throw new NotFoundException('shartnoma mavjud emas');
+      throw new NotFoundException('shartnoma mavjud emas'); // Исключение, если shartnoma не найден
     }
-    return new ApiResponse(shartnoma, 200);
+
+    return new ApiResponse(shartnoma, 200); // Возвращаем shartnoma с кодом 200
   }
 
   async update(
