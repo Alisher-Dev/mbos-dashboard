@@ -128,7 +128,7 @@ export class DashboardService {
   async findStatstik() {
     const stats = await this.incomeRepo
       .createQueryBuilder('income')
-      .select("DATE_FORMAT(income.created_at, '%Y-%m') AS date")
+      .select("TO_CHAR(income.created_at, 'YYYY-MM') AS date")
       .addSelect(
         'SUM(CASE WHEN income.is_paid = :paid THEN income.amount ELSE 0 END)',
         'tushum',
@@ -141,9 +141,9 @@ export class DashboardService {
         paid: EnumIncamIsPaid.paid,
         no_paid: EnumIncamIsPaid.no_paid,
       })
-      .groupBy("DATE_FORMAT(income.created_at, '%Y-%m')")
-      .orderBy("DATE_FORMAT(income.created_at, '%Y-%m')", 'ASC')
-      .andWhere('income.isDeleted = :isDeleted', { isDeleted: 0 })
+      .where('income.isDeleted = :isDeleted', { isDeleted: 0 })
+      .groupBy("TO_CHAR(income.created_at, 'YYYY-MM')")
+      .orderBy("TO_CHAR(income.created_at, 'YYYY-MM')", 'ASC')
       .getRawMany();
 
     return new ApiResponse(stats);
