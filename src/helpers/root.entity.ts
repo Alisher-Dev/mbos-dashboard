@@ -20,7 +20,7 @@ export class RootEntity {
   @Column({ default: 0, type: 'int' })
   isDeleted: number;
 
-  @Column()
+  @Column({ nullable: true })
   whoCreated: string;
 
   @Column({ nullable: true })
