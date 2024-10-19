@@ -128,7 +128,7 @@ export class DashboardService {
   async findStatstik() {
     const stats = await this.incomeRepo
       .createQueryBuilder('income')
-      .select("TO_CHAR(income.created_at, 'YYYY-MM') AS date")
+      .select("TO_CHAR(income.created_at, 'YYYY-MM')", 'date')
       .addSelect(
         'SUM(CASE WHEN income.is_paid = :paid THEN income.amount ELSE 0 END)',
         'tushum',
