@@ -90,21 +90,24 @@ export class ShartnomaService {
   }
 
   async findAll({ page, limit, search }: FindAllQuery) {
-    const totalItems = await this.shartnomeRepo.count();
+    const totalItems = await this.shartnomeRepo.count({
+      where: { isDeleted: 0 }, // Считаем только не удаленные записи
+    });
+
     const pagination = new Pagination(totalItems, page, limit);
 
     const shartnoma = await this.shartnomeRepo
       .createQueryBuilder('shartnoma')
-      .where('shartnoma.isDeleted = :isDeleted', { isDeleted: 0 })
-      .leftJoinAndSelect('shartnoma.user', 'user')
+      .where('shartnoma.isDeleted = :isDeleted', { isDeleted: 0 }) // Только не удаленные контракты
+      .leftJoinAndSelect('shartnoma.user', 'user') // Присоединяем пользователя
       .leftJoinAndSelect(
-        'shartnoma.user',
+        'shartnoma.user', // Условие для пользователя, который не удален
         'user',
         'user.isDeleted = :isDeleted',
         { isDeleted: 0 },
       )
       .leftJoinAndSelect(
-        'shartnoma.service',
+        'shartnoma.service', // Присоединяем услуги
         'service',
         'service.isDeleted = :isDeleted',
         { isDeleted: 0 },
@@ -112,17 +115,17 @@ export class ShartnomaService {
       .andWhere(
         new Brackets((qb) => {
           qb.where('user.F_I_O LIKE :F_I_O', {
-            F_I_O: `%${search}%`,
+            F_I_O: `%${search}%`, // Поиск по имени пользователя
           }).orWhere('CAST(user.phone AS CHAR) LIKE :phone', {
-            phone: `%${search}%`,
+            phone: `%${search}%`, // Поиск по телефону
           });
         }),
       )
-      .take(limit)
-      .skip((page - 1) * limit)
+      .take(limit) // Лимит записей для вывода
+      .skip((page - 1) * limit) // Пропускаем записи для пагинации
       .getMany();
 
-    return new ApiResponse(shartnoma, 200, pagination);
+    return new ApiResponse(shartnoma, 200, pagination); // Возвращаем результат вместе с данными пагинации
   }
 
   async findOne(id: number) {

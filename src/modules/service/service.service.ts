@@ -58,18 +58,20 @@ export class ServiceService {
     const service = await this.serviceRepo
       .createQueryBuilder('service')
       .where('service.isDeleted = :isDeleted', { isDeleted: 0 })
+      .andWhere('service.id = :id', { id }) // Условие для поиска по id
       .leftJoinAndSelect(
-        'shartnoma.service',
-        'service',
-        'service.isDeleted = :isDeleted',
+        'service.shartnoma', // Присоединяем shartnoma
+        'shartnoma',
+        'shartnoma.isDeleted = :isDeleted',
         { isDeleted: 0 },
       )
       .getOne();
 
     if (!service) {
-      throw new NotFoundException('service mavjud emas');
+      throw new NotFoundException('service mavjud emas'); // Исключение, если сервис не найден
     }
-    return new ApiResponse(service, 200);
+
+    return new ApiResponse(service, 200); // Возвращаем данные
   }
 
   async update(id: number, updateServiceDto: UpdateServiceDto, userId: number) {
