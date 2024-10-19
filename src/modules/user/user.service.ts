@@ -63,26 +63,26 @@ export class UserService {
     const user = await this.userRepo
       .createQueryBuilder('user')
       .leftJoinAndSelect(
-        'user.shartnome',
+        'user.shartnome', // Связываем таблицу shartnome
         'shartnome',
-        'shartnome.isDeleted = :isDeleted',
+        'shartnome.isDeleted = :isDeleted', // Условие только для не удаленных записей
         { isDeleted: 0 },
       )
       .leftJoinAndSelect(
-        'user.income',
+        'user.income', // Связываем таблицу income
         'income',
-        'income.isDeleted = :isDeleted',
+        'income.isDeleted = :isDeleted', // Условие только для не удаленных записей
         { isDeleted: 0 },
       )
-      .where('user.id = :id', { id })
-      .andWhere('user.isDeleted = :isDeleted', { isDeleted: 0 })
-      .getOne();
+      .where('user.id = :id', { id }) // Условие для поиска пользователя по id
+      .andWhere('user.isDeleted = :isDeleted', { isDeleted: 0 }) // Условие для пользователя, который не удален
+      .getOne(); // Получаем одну запись
 
     if (!user) {
-      throw new NotFoundException('foydalanuvchi mavjud emas');
+      throw new NotFoundException('foydalanuvchi mavjud emas'); // Исключение, если пользователь не найден
     }
 
-    return new ApiResponse(user, 200);
+    return new ApiResponse(user, 200); // Возвращаем данные пользователя с кодом 200
   }
 
   async update(id: number, updateUserDto: UpdateUserDto, userId: number) {
