@@ -99,19 +99,6 @@ export class ShartnomaService {
     const shartnoma = await this.shartnomeRepo
       .createQueryBuilder('shartnoma')
       .where('shartnoma.isDeleted = :isDeleted', { isDeleted: 0 }) // Только не удаленные контракты
-      .leftJoinAndSelect('shartnoma.user', 'user') // Присоединяем пользователя
-      .leftJoinAndSelect(
-        'shartnoma.user', // Условие для пользователя, который не удален
-        'user',
-        'user.isDeleted = :isDeleted',
-        { isDeleted: 0 },
-      )
-      .leftJoinAndSelect(
-        'shartnoma.service', // Присоединяем услуги
-        'service',
-        'service.isDeleted = :isDeleted',
-        { isDeleted: 0 },
-      )
       .andWhere(
         new Brackets((qb) => {
           qb.where('user.F_I_O LIKE :F_I_O', {
@@ -121,11 +108,23 @@ export class ShartnomaService {
           });
         }),
       )
-      .take(limit) // Лимит записей для вывода
-      .skip((page - 1) * limit) // Пропускаем записи для пагинации
+      .leftJoinAndSelect(
+        'shartnoma.user',
+        'user',
+        'user.isDeleted = :isDeleted',
+        { isDeleted: 0 },
+      )
+      .leftJoinAndSelect(
+        'shartnoma.service',
+        'service',
+        'service.isDeleted = :isDeleted',
+        { isDeleted: 0 },
+      )
+      .take(limit)
+      .skip((page - 1) * limit)
       .getMany();
 
-    return new ApiResponse(shartnoma, 200, pagination); // Возвращаем результат вместе с данными пагинации
+    return new ApiResponse(shartnoma, 200, pagination);
   }
 
   async findOne(id: number) {
