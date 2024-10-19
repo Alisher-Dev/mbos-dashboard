@@ -53,13 +53,15 @@ export class IncomeService {
     }
     newIncome.user = user;
 
-    const shartnoma = await this.shartnomaRepo.findOneBy({
-      id: createIncomeDto.shartnoma_id,
-    });
-    if (!shartnoma) {
-      throw new NotFoundException('shartnoma topilmadi');
+    if (!!createIncomeDto.shartnoma_id) {
+      const shartnoma = await this.shartnomaRepo.findOneBy({
+        id: createIncomeDto.shartnoma_id,
+      });
+      if (!shartnoma) {
+        throw new NotFoundException('shartnoma topilmadi');
+      }
+      newIncome.shartnoma = shartnoma;
     }
-    newIncome.shartnoma = shartnoma;
 
     await this.incomeRepo.save(newIncome);
     return new ApiResponse('Income created', 201);
