@@ -68,7 +68,6 @@ export class UserService {
         'shartnome.isDeleted = :isDeleted',
         { isDeleted: 0 },
       )
-      .leftJoinAndSelect('shartnome.service', 'service')
       .leftJoinAndSelect(
         'user.income',
         'income',
