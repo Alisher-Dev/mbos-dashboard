@@ -27,7 +27,11 @@ export class Income extends RootEntity {
   @Column({ type: 'enum', enum: EnumIncamIsPaid })
   is_paid: EnumIncamIsPaid;
 
-  @Column({ type: 'enum', enum: EnumShartnomaPaid })
+  @Column({
+    type: 'enum',
+    enum: EnumShartnomaPaid,
+    default: EnumShartnomaPaid.no_paid,
+  })
   confirm_payment: EnumShartnomaPaid;
 
   @Column({
