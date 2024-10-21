@@ -6,6 +6,7 @@ export interface FindAllQuery {
   limit?: number;
   search?: string;
   type?: EnumServiceType;
+  filter?: 'ASC' | 'DESC';
 }
 
 export interface IPayload {

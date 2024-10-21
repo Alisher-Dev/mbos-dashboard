@@ -96,7 +96,7 @@ export class ShartnomaService {
     return new ApiResponse('shartnoma yarating', 201);
   }
 
-  async findAll({ page, limit, search }: FindAllQuery) {
+  async findAll({ page, limit, search, filter }: FindAllQuery) {
     const totalItems = await this.shartnomeRepo.count({
       where: { isDeleted: 0 },
     });
@@ -105,10 +105,10 @@ export class ShartnomaService {
 
     const shartnoma = await this.shartnomeRepo
       .createQueryBuilder('shartnoma')
-      .where('shartnoma.isDeleted = :isDeleted', { isDeleted: 0 }) // Только не удаленные контракты
-      .leftJoinAndSelect('shartnoma.user', 'user') // Присоединяем пользователя
+      .where('shartnoma.isDeleted = :isDeleted', { isDeleted: 0 })
+      .leftJoinAndSelect('shartnoma.user', 'user')
       .leftJoinAndSelect(
-        'shartnoma.service', // Присоединяем услуги
+        'shartnoma.service',
         'service',
         'service.isDeleted = :isDeleted',
         { isDeleted: 0 },
@@ -116,14 +116,15 @@ export class ShartnomaService {
       .andWhere(
         new Brackets((qb) => {
           qb.where('user.F_I_O LIKE :F_I_O', {
-            F_I_O: `%${search}%`, // Поиск по имени пользователя
+            F_I_O: `%${search}%`,
           }).orWhere('CAST(user.phone AS CHAR) LIKE :phone', {
-            phone: `%${search}%`, // Поиск по телефону
+            phone: `%${search}%`,
           });
         }),
       )
-      .take(limit) // Лимит записей для вывода
-      .skip((page - 1) * limit) // Пропускаем записи для пагинации
+      .orderBy('shartnoma.tolash_sana', filter || 'ASC')
+      .take(limit)
+      .skip((page - 1) * limit)
       .getMany();
 
     return new ApiResponse(shartnoma, 200, pagination);
@@ -133,19 +134,19 @@ export class ShartnomaService {
     const shartnoma = await this.shartnomeRepo
       .createQueryBuilder('shartnoma')
       .leftJoinAndSelect(
-        'shartnoma.income', // Присоединяем income
+        'shartnoma.income',
         'income',
         'income.isDeleted = :isDeleted',
         { isDeleted: 0 },
       )
       .leftJoinAndSelect(
-        'shartnoma.service', // Исправлено на shartnoma
+        'shartnoma.service',
         'service',
         'service.isDeleted = :isDeleted',
         { isDeleted: 0 },
       )
       .leftJoinAndSelect(
-        'shartnoma.user', // Присоединяем пользователя
+        'shartnoma.user',
         'user',
         'user.isDeleted = :isDeleted',
         { isDeleted: 0 },
@@ -155,10 +156,10 @@ export class ShartnomaService {
       .getOne();
 
     if (!shartnoma) {
-      throw new NotFoundException('shartnoma mavjud emas'); // Исключение, если shartnoma не найден
+      throw new NotFoundException('shartnoma mavjud emas');
     }
 
-    return new ApiResponse(shartnoma, 200); // Возвращаем shartnoma с кодом 200
+    return new ApiResponse(shartnoma, 200);
   }
 
   async update(
