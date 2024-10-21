@@ -22,7 +22,7 @@ export class UserService {
     const newUser = this.userRepo.create(createUserDto);
 
     const user = await this.userRepo.findOne({
-      where: { phone: createUserDto.phone },
+      where: { phone: createUserDto.phone, isDeleted: 0 },
     });
 
     newUser.whoCreated = userId.toString();
@@ -63,9 +63,9 @@ export class UserService {
     const user = await this.userRepo
       .createQueryBuilder('user')
       .leftJoinAndSelect(
-        'user.shartnome', // Связываем таблицу shartnome
+        'user.shartnome',
         'shartnome',
-        'shartnome.isDeleted = :isDeleted', // Условие только для не удаленных записей
+        'shartnome.isDeleted = :isDeleted',
         { isDeleted: 0 },
       )
       .leftJoinAndSelect(
