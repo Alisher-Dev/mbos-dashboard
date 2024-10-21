@@ -8,7 +8,11 @@ import { ApiResponse } from 'src/helpers/apiRespons';
 import { FindAllQuery } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
 import { User } from '../user/entities/user.entity';
-import { EnumShartnomaPaid } from 'src/helpers/enum';
+import {
+  EnumServiceType,
+  EnumShartnomaPaid,
+  EnumShartnomeTpeTranslation,
+} from 'src/helpers/enum';
 import { Income } from '../income/entities/income.entity';
 import { Service } from '../service/entities/service.entity';
 
@@ -73,8 +77,10 @@ export class ShartnomaService {
 
     const newIncome = {
       amount: createShartnomaDto.advancePayment || 0,
-      payment_method: createShartnomaDto.paymentMethod as unknown,
+      payment_method:
+        createShartnomaDto.paymentMethod as EnumShartnomeTpeTranslation,
       is_paid: 'paid',
+      shartnome_id: newShartnoma.id,
       date: new Date(),
       user: user,
       whoCreated: userId.toString(),
