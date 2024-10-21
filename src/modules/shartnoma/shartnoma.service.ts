@@ -98,7 +98,7 @@ export class ShartnomaService {
 
   async findAll({ page, limit, search }: FindAllQuery) {
     const totalItems = await this.shartnomeRepo.count({
-      where: { isDeleted: 0 }, // Считаем только не удаленные записи
+      where: { isDeleted: 0 },
     });
 
     const pagination = new Pagination(totalItems, page, limit);

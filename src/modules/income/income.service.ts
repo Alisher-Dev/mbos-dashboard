@@ -74,7 +74,12 @@ export class IncomeService {
   }
 
   async findAll({ page, limit, search }: FindAllQuery) {
-    const totalItems = await this.incomeRepo.count();
+    const totalItems = await this.incomeRepo.count({
+      where: {
+        isDeleted: 0,
+        ...(search && { user: { F_I_O: Like(`%${search}%`) } }),
+      },
+    });
     const pagination = new Pagination(totalItems, page, limit);
 
     const incomes = await this.incomeRepo.find({
