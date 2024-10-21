@@ -15,7 +15,7 @@ export class User extends RootEntity {
   @Column()
   adress: string;
 
-  @Column()
+  @Column({ nullable: true })
   INN_number: string;
 
   @OneToMany(() => Shartnoma, (shartnoma) => shartnoma.user, {
