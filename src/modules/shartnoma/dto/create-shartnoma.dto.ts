@@ -53,7 +53,6 @@ export class CreateShartnomaDto {
   purchase_status: EnumShartnomaPaid;
 
   @IsEnum(EnumShartnomeTpeTranslation)
-  @IsOptional()
   @ApiProperty()
   paymentMethod: EnumShartnomeTpeTranslation;
 
