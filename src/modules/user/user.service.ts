@@ -43,7 +43,7 @@ export class UserService {
       .where('user.isDeleted = :isDeleted', { isDeleted: 0 })
       .andWhere(
         new Brackets((qb) => {
-          qb.where('user.F_I_O LIKE :search', {
+          qb.where('user.INN_number LIKE :search', {
             search: `%${search}%`,
           }).orWhere('CAST(user.phone AS CHAR) LIKE :search', {
             search: `%${search}%`,
