@@ -78,7 +78,8 @@ export class ShartnomaService {
     const newIncome = {
       amount: createShartnomaDto.advancePayment || 0,
       payment_method:
-        createShartnomaDto.paymentMethod as EnumShartnomeTpeTranslation,
+        createShartnomaDto.paymentMethod ||
+        (EnumShartnomeTpeTranslation.cash as EnumShartnomeTpeTranslation),
       is_paid: 'paid',
       shartnome_id: newShartnoma.id,
       date: new Date(),
