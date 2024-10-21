@@ -16,6 +16,7 @@ export enum EnumShartnomeTpeTranslation {
 
 export enum EnumIncamIsPaid {
   paid = 'paid',
+  confirm_payment = 'confirm_payment',
   no_paid = 'no_paid',
 }
 

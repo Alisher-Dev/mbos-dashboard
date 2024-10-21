@@ -1,4 +1,8 @@
-import { EnumIncamIsPaid, EnumIncamTpeTranslation } from 'src/helpers/enum';
+import {
+  EnumIncamIsPaid,
+  EnumIncamTpeTranslation,
+  EnumShartnomaPaid,
+} from 'src/helpers/enum';
 import { RootEntity } from 'src/helpers/root.entity';
 import { Shartnoma } from 'src/modules/shartnoma/entities/shartnoma.entity';
 import { User } from 'src/modules/user/entities/user.entity';
@@ -22,6 +26,9 @@ export class Income extends RootEntity {
 
   @Column({ type: 'enum', enum: EnumIncamIsPaid })
   is_paid: EnumIncamIsPaid;
+
+  @Column({ type: 'enum', enum: EnumShartnomaPaid })
+  confirm_payment: EnumShartnomaPaid;
 
   @Column({
     type: 'enum',

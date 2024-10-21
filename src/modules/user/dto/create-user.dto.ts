@@ -13,4 +13,8 @@ export class CreateUserDto {
   @ApiProperty()
   @IsString()
   adress: string;
+
+  @ApiProperty()
+  @IsString()
+  INN_number: string;
 }

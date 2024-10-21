@@ -34,6 +34,15 @@ export class DashboardService {
       .andWhere('income.isDeleted = :isDeleted', { isDeleted: 0 })
       .getRawOne();
 
+    const confirm = await this.incomeRepo
+      .createQueryBuilder('income')
+      .select('SUM(income.amount)', 'total')
+      .where('income.is_paid = :isPaid', {
+        isPaid: EnumIncamIsPaid.confirm_payment,
+      })
+      .andWhere('income.isDeleted = :isDeleted', { isDeleted: 0 })
+      .getRawOne();
+
     const expend = await this.incomeRepo
       .createQueryBuilder('income')
       .select('SUM(income.amount)', 'total')
@@ -43,12 +52,18 @@ export class DashboardService {
 
     const recentContract = await this.shartnomaRepo.find({
       relations: ['user', 'service'],
+      where: {
+        user: { isDeleted: 0 },
+        service: { isDeleted: 0 },
+        isDeleted: 0,
+      },
     });
 
     return new ApiResponse({
       usersCount,
       income: income?.total || 0,
       expend: expend?.total || 0,
+      confirm: confirm?.total || 0,
       recentContract: recentContract.slice(0, 5),
     });
   }
@@ -110,6 +125,15 @@ export class DashboardService {
       .andWhere('chikim.isDeleted = :isDeleted', { isDeleted: 0 })
       .getRawOne();
 
+    const confirm = await this.incomeRepo
+      .createQueryBuilder('income')
+      .select('SUM(income.amount)', 'total')
+      .where('income.is_paid = :isPaid', {
+        isPaid: EnumIncamIsPaid.confirm_payment,
+      })
+      .andWhere('income.isDeleted = :isDeleted', { isDeleted: 0 })
+      .getRawOne();
+
     return new ApiResponse({
       tushum: {
         cash: cash.total || 0,
@@ -122,6 +146,7 @@ export class DashboardService {
         delivery: delivery.total || 0,
         other: otherChikim.total || 0,
       },
+      confirm,
     });
   }
 

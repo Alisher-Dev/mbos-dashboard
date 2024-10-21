@@ -38,20 +38,26 @@ export class IncomeService {
         createIncomeDto.payment_method === EnumIncamTpeTranslation.delivery)
     ) {
       throw new BadGatewayException("unaka income yarata o'lmaysiz");
-    }
-    if (
+    } else if (
       createIncomeDto.is_paid === EnumIncamIsPaid.no_paid &&
       (createIncomeDto.payment_method === EnumIncamTpeTranslation.cash ||
         createIncomeDto.payment_method === EnumIncamTpeTranslation.online ||
         createIncomeDto.payment_method === EnumIncamTpeTranslation.translation)
     ) {
       throw new BadGatewayException("unaka income yarata o'lmaysiz");
+    } else {
+      createIncomeDto.is_paid === EnumIncamIsPaid.confirm_payment;
     }
-    const user = await this.userRepo.findOneBy({ id: createIncomeDto.user_id });
-    if (!user) {
-      throw new NotFoundException('foydalanuvchi topilmadi');
+
+    if (!!createIncomeDto.user_id) {
+      const user = await this.userRepo.findOneBy({
+        id: createIncomeDto.user_id,
+      });
+      if (!user) {
+        throw new NotFoundException('foydalanuvchi topilmadi');
+      }
+      newIncome.user = user;
     }
-    newIncome.user = user;
 
     if (!!createIncomeDto.shartnoma_id) {
       const shartnoma = await this.shartnomaRepo.findOneBy({
@@ -100,14 +106,15 @@ export class IncomeService {
         updateIncomeDto.payment_method === EnumIncamTpeTranslation.delivery)
     ) {
       throw new BadGatewayException("income o'zgartira o'lmaysiz");
-    }
-    if (
+    } else if (
       updateIncomeDto.is_paid === EnumIncamIsPaid.no_paid &&
       (updateIncomeDto.payment_method === EnumIncamTpeTranslation.cash ||
         updateIncomeDto.payment_method === EnumIncamTpeTranslation.online ||
         updateIncomeDto.payment_method === EnumIncamTpeTranslation.translation)
     ) {
       throw new BadGatewayException("income o'zgartira o'lmaysiz");
+    } else {
+      updateIncomeDto.is_paid === EnumIncamIsPaid.confirm_payment;
     }
 
     if (!!updateIncomeDto.user_id) {

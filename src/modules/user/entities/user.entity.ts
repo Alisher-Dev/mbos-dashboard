@@ -15,6 +15,9 @@ export class User extends RootEntity {
   @Column()
   adress: string;
 
+  @Column()
+  INN_number: string;
+
   @OneToMany(() => Shartnoma, (shartnoma) => shartnoma.user, {
     onDelete: 'CASCADE',
   })
