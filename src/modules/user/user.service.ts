@@ -22,7 +22,7 @@ export class UserService {
     const newUser = this.userRepo.create(createUserDto);
 
     const user = await this.userRepo.findOne({
-      where: { phone: createUserDto.phone, isDeleted: 0 },
+      where: { INN_number: createUserDto.INN_number, isDeleted: 0 },
     });
 
     newUser.whoCreated = userId.toString();
