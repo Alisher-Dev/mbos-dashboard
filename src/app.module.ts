@@ -9,6 +9,14 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ServiceModule } from './modules/service/service.module';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(dbConfig), UserModule, ShartnomaModule, IncomeModule, AdminModule, DashboardModule, ServiceModule],
+  imports: [
+    TypeOrmModule.forRoot(dbConfig),
+    UserModule,
+    ShartnomaModule,
+    IncomeModule,
+    AdminModule,
+    DashboardModule,
+    ServiceModule,
+  ],
 })
 export class AppModule {}
