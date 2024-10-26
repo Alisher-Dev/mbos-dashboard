@@ -19,21 +19,22 @@ export class UserService {
     private readonly userRepo: Repository<User>,
   ) {}
   async create(createUserDto: CreateUserDto, userId: number) {
-    const newUser = this.userRepo.create(createUserDto);
-
-    const user = await this.userRepo.findOne({
+    const existingUser = await this.userRepo.findOne({
       where: { INN_number: createUserDto.INN_number, isDeleted: 0 },
     });
 
-    newUser.whoCreated = userId.toString();
-
-    if (!!user) {
-      throw new BadRequestException('foydalanuvji yaratilgan');
+    if (existingUser) {
+      throw new BadRequestException('Foydalanuvchi yaratilgan');
     }
+
+    const newUser = this.userRepo.create({
+      ...createUserDto,
+      whoCreated: userId.toString(),
+    });
 
     await this.userRepo.save(newUser);
 
-    return new ApiResponse('foydalanuvchi yaratish', 201);
+    return new ApiResponse('Foydalanuvchi yaratish', 201);
   }
 
   async findAll({ page, limit, search }: FindAllQuery) {
