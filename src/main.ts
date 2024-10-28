@@ -30,4 +30,5 @@ async function bootstrap() {
   await app.listen(envConfig.port || 3000);
   console.log(`🚀🚀🚀 Listening on port ${envConfig.port} 🚀🚀🚀`);
 }
+
 bootstrap();
