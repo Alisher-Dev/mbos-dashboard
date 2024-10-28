@@ -3,11 +3,6 @@ export enum EnumShartnoma {
   one_bay = 'one_bay',
 }
 
-export enum EnumShartnomaPaid {
-  paid = 'paid',
-  no_paid = 'no_paid',
-}
-
 export enum EnumShartnomeTpeTranslation {
   cash = 'cash',
   translation = 'translation',

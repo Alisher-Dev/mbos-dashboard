@@ -32,6 +32,7 @@ export class IncomeService {
     const newIncome = this.incomeRepo.create(createIncomeDto);
     newIncome.whoCreated = userId.toString();
     newIncome.date = new Date(createIncomeDto.date);
+
     if (
       createIncomeDto.is_paid === EnumIncamIsPaid.paid &&
       (createIncomeDto.payment_method === EnumIncamTpeTranslation.salary ||
