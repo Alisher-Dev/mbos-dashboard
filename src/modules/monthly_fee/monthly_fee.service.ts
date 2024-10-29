@@ -67,7 +67,7 @@ export class MonthlyFeeService {
     });
 
     for (const shartnoma of allShartnoma) {
-      const currentMonth = new Date('2024-11-01 10:26:08.199742').getMonth();
+      const currentMonth = new Date().getMonth();
       const currentYear = new Date().getFullYear();
 
       const existingMonthlyFee = shartnoma.monthlyFee.find(
