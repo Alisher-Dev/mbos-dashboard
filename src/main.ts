@@ -14,7 +14,6 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  //as
 
   const config = new DocumentBuilder()
     .setTitle('mbos-dashboard')
