@@ -94,7 +94,7 @@ export class ShartnomaService {
     const income = await this.incomeRepo.save(newIncome as any);
     newShartnoma.income = [income];
 
-    if (newShartnoma.shartnoma_turi === EnumShartnoma.one_bay) {
+    if (newShartnoma.shartnoma_turi === EnumShartnoma.subscription_fee) {
       const newMonthlyFee = {
         date: createShartnomaDto.tolash_sana,
         shartnoma_id: newShartnoma.id,
