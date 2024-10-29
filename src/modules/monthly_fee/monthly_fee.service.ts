@@ -69,13 +69,12 @@ export class MonthlyFeeService {
     const today = new Date();
 
     for (const shartnoma of allShartnoma) {
-      // Проверяем, активен ли срок договора
       if (
         shartnoma.shartnoma_muddati &&
         new Date(shartnoma.shartnoma_muddati) < today
       ) {
         console.log(`Срок действия shartnoma с id = ${shartnoma.id} истек.`);
-        continue; // Пропускаем создание monthlyFee для этого shartnoma
+        continue;
       }
 
       const currentMonth = today.getMonth();
