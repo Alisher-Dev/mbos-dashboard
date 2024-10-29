@@ -3,7 +3,7 @@ import { CreateMonthlyFeeDto } from './dto/create-monthly_fee.dto';
 import { UpdateMonthlyFeeDto } from './dto/update-monthly_fee.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Shartnoma } from '../shartnoma/entities/shartnoma.entity';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { Repository } from 'typeorm';
 import { MonthlyFee } from './entities/monthly_fee.entity';
 import { ApiResponse } from 'src/helpers/apiRespons';
@@ -59,22 +59,45 @@ export class MonthlyFeeService {
     return new ApiResponse(monthlyFee, 200, pagination);
   }
 
-  @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
+  @Cron('0 8 * * *')
   async updateOrCreateMonthlyFees() {
+    const today = new Date();
+
+    // Проверяем, является ли сегодня 24 число или раньше
+    if (today.getDate() > 24) {
+      console.log('Запрос не выполняется, так как сегодня больше 24 числа.');
+      return; // Если больше 24, выходим из метода
+    }
+
     const allShartnoma = await this.shartnomaRepo.find({
       where: { isDeleted: 0, shartnoma_turi: EnumShartnoma.subscription_fee },
       relations: ['monthlyFee', 'service'],
     });
 
-    const today = new Date();
-
     for (const shartnoma of allShartnoma) {
-      if (
-        shartnoma.shartnoma_muddati &&
-        new Date(shartnoma.shartnoma_muddati) < today
-      ) {
+      if (!shartnoma.shartnoma_muddati) {
+        console.log(
+          `Срок действия shartnoma с id = ${shartnoma.id} не установлен.`,
+        );
+        continue;
+      }
+
+      const shartnomaMuddati = new Date(shartnoma.shartnoma_muddati);
+
+      // Проверка, истек ли срок действия
+      if (shartnomaMuddati < today) {
         console.log(`Срок действия shartnoma с id = ${shartnoma.id} истек.`);
         continue;
+      }
+
+      // Проверка, осталось ли 7 дней до окончания
+      const timeDiff = shartnomaMuddati.getTime() - today.getTime();
+      const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+      if (daysRemaining <= 7) {
+        console.log(
+          `До окончания срока действия shartnoma с id = ${shartnoma.id} осталось ${daysRemaining} дней.`,
+        );
       }
 
       const currentMonth = today.getMonth();
