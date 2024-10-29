@@ -31,6 +31,11 @@ export class MonthlyFeeController {
     return this.monthlyFeeService.create(createMonthlyFeeDto, req.userId);
   }
 
+  @Get('/test')
+  Find() {
+    return this.monthlyFeeService.updateOrCreateMonthlyFees();
+  }
+
   @Get()
   @UseGuards(AuthGuard)
   findAll(@Query() query: FindAllQuery) {
