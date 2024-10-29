@@ -126,12 +126,6 @@ export class ShartnomaService {
         'service.isDeleted = :isDeleted',
         { isDeleted: 0 },
       )
-      .leftJoinAndSelect(
-        'shartnoma.monthlyFee',
-        'monthlyFee',
-        'monthlyFee.isDeleted = :isDeleted',
-        { isDeleted: 0 },
-      )
       .andWhere(
         new Brackets((qb) => {
           qb.where('user.F_I_O LIKE :F_I_O', {

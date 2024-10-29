@@ -62,7 +62,7 @@ export class MonthlyFeeService {
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
   async updateOrCreateMonthlyFees() {
     const allShartnoma = await this.shartnomaRepo.find({
-      where: { isDeleted: 0, shartnoma_turi: EnumShartnoma.one_bay },
+      where: { isDeleted: 0, shartnoma_turi: EnumShartnoma.subscription_fee },
       relations: ['monthlyFee'],
     });
 
