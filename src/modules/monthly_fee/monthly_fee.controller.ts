@@ -38,10 +38,13 @@ export class MonthlyFeeController {
   }
 
   @Patch(':id')
-  // @UseGuards(AuthGuard)
-  update() // @Req() req: IPayload, // @Body() updateMonthlyFeeDto: UpdateMonthlyFeeDto, // @Param('id') id: string,
-  {
-    return this.monthlyFeeService.updateOrCreateMonthlyFees();
+  @UseGuards(AuthGuard)
+  update(
+    @Param('id') id: string,
+    @Body() updateMonthlyFeeDto: UpdateMonthlyFeeDto,
+    @Req() req: IPayload,
+  ) {
+    return this.monthlyFeeService.update(+id, updateMonthlyFeeDto, req.userId);
   }
 
   @Delete(':id')
