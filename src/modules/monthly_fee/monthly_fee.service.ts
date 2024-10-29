@@ -63,7 +63,7 @@ export class MonthlyFeeService {
   async updateOrCreateMonthlyFees() {
     const allShartnoma = await this.shartnomaRepo.find({
       where: { isDeleted: 0, shartnoma_turi: EnumShartnoma.subscription_fee },
-      relations: ['monthlyFee'],
+      relations: ['monthlyFee', 'service'],
     });
 
     const today = new Date();
@@ -90,7 +90,7 @@ export class MonthlyFeeService {
         const newMonthlyFee = this.monthlyFeeRepo.create({
           date: today,
           shartnoma: shartnoma,
-          amount: +shartnoma.remainingPayment + +shartnoma.advancePayment || 0,
+          amount: +shartnoma.service.price * +shartnoma.count || 0,
         });
 
         await this.monthlyFeeRepo.save(newMonthlyFee);
