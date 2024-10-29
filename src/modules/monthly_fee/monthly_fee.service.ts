@@ -91,9 +91,7 @@ export class MonthlyFeeService {
         const newMonthlyFee = this.monthlyFeeRepo.create({
           date: today,
           shartnoma: shartnoma,
-          amount:
-            (shartnoma.remainingPayment + shartnoma.advancePayment) *
-              shartnoma.count || 0,
+          amount: shartnoma.remainingPayment + shartnoma.advancePayment || 0,
         });
 
         await this.monthlyFeeRepo.save(newMonthlyFee);
