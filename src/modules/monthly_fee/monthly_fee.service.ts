@@ -62,69 +62,54 @@ export class MonthlyFeeService {
   @Cron('0 8 * * *')
   async updateOrCreateMonthlyFees() {
     const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
 
-    // Проверяем, является ли сегодня 24 число или раньше
-    if (today.getDate() > 24) {
-      console.log('Запрос не выполняется, так как сегодня больше 24 числа.');
-      return; // Если больше 24, выходим из метода
-    }
+    // Проверяем, если сегодня 28, 29, 30 или 31
+    if (today.getDate() >= 28) {
+      // Получаем все shartnoma
+      const allShartnoma = await this.shartnomaRepo.find({
+        where: { isDeleted: 0, shartnoma_turi: EnumShartnoma.subscription_fee },
+        relations: ['monthlyFee', 'service'],
+      });
 
-    const allShartnoma = await this.shartnomaRepo.find({
-      where: { isDeleted: 0, shartnoma_turi: EnumShartnoma.subscription_fee },
-      relations: ['monthlyFee', 'service'],
-    });
+      for (const shartnoma of allShartnoma) {
+        if (
+          shartnoma.shartnoma_muddati &&
+          new Date(shartnoma.shartnoma_muddati) < today
+        ) {
+          console.log(`Срок действия shartnoma с id = ${shartnoma.id} истек.`);
+          continue;
+        }
 
-    for (const shartnoma of allShartnoma) {
-      if (!shartnoma.shartnoma_muddati) {
-        console.log(
-          `Срок действия shartnoma с id = ${shartnoma.id} не установлен.`,
+        // Проверяем, создан ли monthlyFee для следующего месяца
+        const nextMonth = new Date(currentYear, currentMonth + 1, 1);
+        const existingMonthlyFee = shartnoma.monthlyFee.find(
+          (fee) =>
+            new Date(fee.date).getMonth() === nextMonth.getMonth() &&
+            new Date(fee.date).getFullYear() === nextMonth.getFullYear(),
         );
-        continue;
+
+        if (!existingMonthlyFee) {
+          // Если записи нет, создаём новую для следующего месяца
+          const newMonthlyFee = this.monthlyFeeRepo.create({
+            date: nextMonth, // Устанавливаем дату первого числа следующего месяца
+            shartnoma: shartnoma,
+            amount: +shartnoma.service.price * +shartnoma.count || 0,
+          });
+
+          await this.monthlyFeeRepo.save(newMonthlyFee);
+          console.log(
+            `Создан новый monthlyFee для shartnoma с id = ${shartnoma.id}`,
+          );
+        } else {
+          console.log(
+            `Запись monthlyFee за следующий месяц уже существует для shartnoma с id = ${shartnoma.id}`,
+          );
+        }
       }
-
-      const shartnomaMuddati = new Date(shartnoma.shartnoma_muddati);
-
-      // Проверка, истек ли срок действия
-      if (shartnomaMuddati < today) {
-        console.log(`Срок действия shartnoma с id = ${shartnoma.id} истек.`);
-        continue;
-      }
-
-      // Проверка, осталось ли 7 дней до окончания
-      const timeDiff = shartnomaMuddati.getTime() - today.getTime();
-      const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
-
-      if (daysRemaining <= 7) {
-        console.log(
-          `До окончания срока действия shartnoma с id = ${shartnoma.id} осталось ${daysRemaining} дней.`,
-        );
-      }
-
-      const currentMonth = today.getMonth();
-      const currentYear = today.getFullYear();
-
-      const existingMonthlyFee = shartnoma.monthlyFee.find(
-        (fee) =>
-          new Date(fee.date).getMonth() === currentMonth &&
-          new Date(fee.date).getFullYear() === currentYear,
-      );
-
-      if (!existingMonthlyFee) {
-        const newMonthlyFee = this.monthlyFeeRepo.create({
-          date: today,
-          shartnoma: shartnoma,
-          amount: +shartnoma.service.price * +shartnoma.count || 0,
-        });
-
-        await this.monthlyFeeRepo.save(newMonthlyFee);
-        console.log(
-          `Создан новый monthlyFee для shartnoma с id = ${shartnoma.id}`,
-        );
-      } else {
-        console.log(
-          `Запись monthlyFee за текущий месяц уже существует для shartnoma с id = ${shartnoma.id}`,
-        );
-      }
+    } else {
+      console.log('Запрос не выполняется, так как сегодня меньше 28 числа.');
     }
   }
 
