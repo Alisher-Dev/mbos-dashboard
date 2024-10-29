@@ -57,7 +57,7 @@ export class MonthlyFeeService {
       take: pagination.limit,
     });
     return new ApiResponse(monthlyFee, 200, pagination);
-  }
+  } // a
 
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
   async updateOrCreateMonthlyFees() {
