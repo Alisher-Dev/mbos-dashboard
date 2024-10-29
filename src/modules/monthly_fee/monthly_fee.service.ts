@@ -66,9 +66,20 @@ export class MonthlyFeeService {
       relations: ['monthlyFee'],
     });
 
+    const today = new Date();
+
     for (const shartnoma of allShartnoma) {
-      const currentMonth = new Date().getMonth();
-      const currentYear = new Date().getFullYear();
+      // Проверяем, активен ли срок договора
+      if (
+        shartnoma.shartnoma_muddati &&
+        new Date(shartnoma.shartnoma_muddati) < today
+      ) {
+        console.log(`Срок действия shartnoma с id = ${shartnoma.id} истек.`);
+        continue; // Пропускаем создание monthlyFee для этого shartnoma
+      }
+
+      const currentMonth = today.getMonth();
+      const currentYear = today.getFullYear();
 
       const existingMonthlyFee = shartnoma.monthlyFee.find(
         (fee) =>
@@ -78,7 +89,7 @@ export class MonthlyFeeService {
 
       if (!existingMonthlyFee) {
         const newMonthlyFee = this.monthlyFeeRepo.create({
-          date: new Date(),
+          date: today,
           shartnoma: shartnoma,
           amount: shartnoma.remainingPayment * shartnoma.count || 0,
         });
