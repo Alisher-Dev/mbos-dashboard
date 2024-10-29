@@ -99,7 +99,7 @@ export class ShartnomaService {
         date: createShartnomaDto.tolash_sana,
         shartnoma_id: newShartnoma.id,
         amount:
-          newShartnoma.remainingPayment + newShartnoma.advancePayment || 0,
+          +newShartnoma.remainingPayment + +newShartnoma.advancePayment || 0,
       };
       const monthly_fee = await this.monthlyFeeRepo.save(newMonthlyFee);
       newShartnoma.monthlyFee = [monthly_fee];
