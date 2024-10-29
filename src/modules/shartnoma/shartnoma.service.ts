@@ -10,11 +10,13 @@ import { Pagination } from 'src/helpers/pagination';
 import { User } from '../user/entities/user.entity';
 import {
   EnumServiceType,
+  EnumShartnoma,
   EnumShartnomaPaid,
   EnumShartnomeTpeTranslation,
 } from 'src/helpers/enum';
 import { Income } from '../income/entities/income.entity';
 import { Service } from '../service/entities/service.entity';
+import { MonthlyFee } from '../monthly_fee/entities/monthly_fee.entity';
 
 @Injectable()
 export class ShartnomaService {
@@ -30,16 +32,19 @@ export class ShartnomaService {
 
     @InjectRepository(Service)
     private readonly serviceRepo: Repository<Service>,
+
+    @InjectRepository(MonthlyFee)
+    private readonly monthlyFeeRepo: Repository<MonthlyFee>,
   ) {}
 
   async create(createShartnomaDto: CreateShartnomaDto, userId: number) {
     const newShartnoma = this.shartnomeRepo.create(createShartnomaDto);
 
+    newShartnoma.whoCreated = userId.toString();
+
     const user = await this.userRepo.findOneBy({
       id: +createShartnomaDto.user_id,
     });
-
-    newShartnoma.whoCreated = userId.toString();
 
     if (!user) {
       throw new NotFoundException('user_id mavjud emas');
@@ -86,14 +91,22 @@ export class ShartnomaService {
       user: user,
       whoCreated: userId.toString(),
     };
-
     const income = await this.incomeRepo.save(newIncome as any);
-
     newShartnoma.income = [income];
+
+    if (newShartnoma.shartnoma_turi === EnumShartnoma.one_bay) {
+      const newMonthlyFee = {
+        date: createShartnomaDto.tolash_sana,
+        shartnoma_id: newShartnoma.id,
+        amount: newShartnoma.remainingPayment * newShartnoma.count || 0,
+      };
+      const monthly_fee = await this.monthlyFeeRepo.save(newMonthlyFee);
+      newShartnoma.monthlyFee = [monthly_fee];
+    }
 
     await this.shartnomeRepo.save(newShartnoma);
 
-    return new ApiResponse('shartnoma yarating', 201);
+    return new ApiResponse('shartnoma created', 201);
   }
 
   async findAll({ page, limit, search, filter }: FindAllQuery) {
@@ -113,18 +126,24 @@ export class ShartnomaService {
         'service.isDeleted = :isDeleted',
         { isDeleted: 0 },
       )
+      .leftJoinAndSelect(
+        'shartnoma.monthlyFee',
+        'monthlyFee',
+        'monthlyFee.isDeleted = :isDeleted',
+        { isDeleted: 0 },
+      )
       .andWhere(
         new Brackets((qb) => {
           qb.where('user.F_I_O LIKE :F_I_O', {
-            F_I_O: `%${search}%`,
+            F_I_O: `%${search || ''}%`,
           }).orWhere('CAST(user.phone AS CHAR) LIKE :phone', {
-            phone: `%${search}%`,
+            phone: `%${search || ''}%`,
           });
         }),
       )
       .orderBy('shartnoma.tolash_sana', filter || 'ASC')
       .take(limit)
-      .skip((page - 1) * limit)
+      .skip(((page - 1) * limit) | 0)
       .getMany();
 
     return new ApiResponse(shartnoma, 200, pagination);
@@ -151,6 +170,12 @@ export class ShartnomaService {
         'user.isDeleted = :isDeleted',
         { isDeleted: 0 },
       )
+      .leftJoinAndSelect(
+        'shartnoma.monthlyFee',
+        'monthlyFee',
+        'monthlyFee.isDeleted = :isDeleted',
+        { isDeleted: 0 },
+      )
       .where('shartnoma.id = :id', { id })
       .andWhere('shartnoma.isDeleted = :isDeleted', { isDeleted: 0 })
       .getOne();
@@ -158,7 +183,6 @@ export class ShartnomaService {
     if (!shartnoma) {
       throw new NotFoundException('shartnoma mavjud emas');
     }
-
     return new ApiResponse(shartnoma, 200);
   }
 

@@ -5,6 +5,7 @@ import {
 } from 'src/helpers/enum';
 import { RootEntity } from 'src/helpers/root.entity';
 import { Income } from 'src/modules/income/entities/income.entity';
+import { MonthlyFee } from 'src/modules/monthly_fee/entities/monthly_fee.entity';
 import { Service } from 'src/modules/service/entities/service.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import {
@@ -73,6 +74,12 @@ export class Shartnoma extends RootEntity {
     onDelete: 'CASCADE',
   })
   income: Income[];
+
+  @OneToMany(() => MonthlyFee, (monthlyFee) => monthlyFee.shartnoma, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  monthlyFee: MonthlyFee[];
 
   @ManyToOne(() => Service, (service) => service.shartnoma, {
     onDelete: 'CASCADE',
