@@ -107,7 +107,6 @@ export class ShartnomaService {
         // Переход к следующему месяцу
         currentMonth += 1;
         if (currentMonth > 11) {
-          // если прошли декабрь, переходим на следующий год
           currentMonth = 0;
           currentYear += 1;
         }
