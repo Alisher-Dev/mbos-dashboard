@@ -82,7 +82,7 @@ export class ShartnomaService {
         : EnumShartnomaPaid.no_paid;
 
     if (newShartnoma.shartnoma_turi === EnumShartnoma.subscription_fee) {
-      const startDate = new Date(createShartnomaDto.tolash_sana);
+      const startDate = new Date(createShartnomaDto.texnik_muddati);
       const endDate = new Date(); // текущая дата
       const monthlyFees = [];
 
