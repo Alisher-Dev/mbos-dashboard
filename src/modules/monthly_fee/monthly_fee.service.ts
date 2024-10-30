@@ -129,6 +129,7 @@ export class MonthlyFeeService {
   ) {
     const monthlyFee = await this.monthlyFeeRepo.findOne({
       where: { id, isDeleted: 0 },
+      relations: ['shartnoma'],
     });
 
     if (!monthlyFee) {

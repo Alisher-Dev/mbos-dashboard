@@ -98,6 +98,7 @@ let MonthlyFeeService = class MonthlyFeeService {
     async update(id, updateMonthlyFeeDto, userId) {
         const monthlyFee = await this.monthlyFeeRepo.findOne({
             where: { id, isDeleted: 0 },
+            relations: ['shartnoma'],
         });
         if (!monthlyFee) {
             throw new common_1.NotFoundException('monthlyFee not found');
