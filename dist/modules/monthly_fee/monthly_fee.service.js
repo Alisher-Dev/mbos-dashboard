@@ -105,20 +105,6 @@ let MonthlyFeeService = class MonthlyFeeService {
         }
         monthlyFee.whoUpdated = userId.toString();
         Object.assign(monthlyFee, updateMonthlyFeeDto);
-        if (monthlyFee.paid >= monthlyFee.amount) {
-            const newIncome = this.incomeRepo.create({
-                amount: monthlyFee.paid,
-                payment_method: enum_1.EnumIncamTpeTranslation.other,
-                is_paid: enum_1.EnumIncamIsPaid.paid,
-                shartnoma: monthlyFee.shartnoma,
-                date: new Date(),
-                user: monthlyFee.shartnoma.user,
-            });
-            if (!newIncome) {
-                throw new common_1.NotFoundException('user not found');
-            }
-            await this.incomeRepo.save(newIncome);
-        }
         await this.monthlyFeeRepo.save(monthlyFee);
         return new apiRespons_1.ApiResponse('monthlyFee yangilandi', 201);
     }
