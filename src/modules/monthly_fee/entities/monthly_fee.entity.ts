@@ -4,7 +4,7 @@ import { Column, Entity, ManyToOne } from 'typeorm';
 
 @Entity()
 export class MonthlyFee extends RootEntity {
-  @Column({ type: 'numeric', precision: 20, scale: 10 })
+  @Column({ type: 'numeric' })
   amount: number;
 
   @Column()
