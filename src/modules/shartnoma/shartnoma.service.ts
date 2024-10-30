@@ -17,6 +17,7 @@ import {
 import { Income } from '../income/entities/income.entity';
 import { Service } from '../service/entities/service.entity';
 import { MonthlyFee } from '../monthly_fee/entities/monthly_fee.entity';
+import e from 'express';
 
 @Injectable()
 export class ShartnomaService {
@@ -80,28 +81,55 @@ export class ShartnomaService {
         ? EnumShartnomaPaid.paid
         : EnumShartnomaPaid.no_paid;
 
-    const newIncome = {
-      amount: createShartnomaDto.advancePayment || 0,
-      payment_method:
-        createShartnomaDto.paymentMethod ||
-        (EnumShartnomeTpeTranslation.cash as EnumShartnomeTpeTranslation),
-      is_paid: 'paid',
-      shartnome_id: newShartnoma.id,
-      date: new Date(),
-      user: user,
-      whoCreated: userId.toString(),
-    };
-    const income = await this.incomeRepo.save(newIncome as any);
-    newShartnoma.income = [income];
-
     if (newShartnoma.shartnoma_turi === EnumShartnoma.subscription_fee) {
-      const newMonthlyFee = {
-        date: createShartnomaDto.tolash_sana,
-        shartnoma_id: newShartnoma.id,
-        amount: +newShartnoma.service.price * +newShartnoma.count || 0,
+      const startDate = new Date(createShartnomaDto.tolash_sana);
+      const endDate = new Date(); // текущая дата
+      const monthlyFees = [];
+
+      let currentMonth = startDate.getMonth();
+      let currentYear = startDate.getFullYear();
+
+      while (
+        currentYear < endDate.getFullYear() ||
+        (currentYear === endDate.getFullYear() &&
+          currentMonth <= endDate.getMonth())
+      ) {
+        const monthlyFeeDate = new Date(currentYear, currentMonth, 1); // Устанавливаем первое число месяца
+
+        const newMonthlyFee = {
+          date: monthlyFeeDate,
+          shartnoma_id: newShartnoma.id,
+          amount: +newShartnoma.service.price * +newShartnoma.count || 0,
+        };
+
+        monthlyFees.push(newMonthlyFee);
+
+        // Переход к следующему месяцу
+        currentMonth += 1;
+        if (currentMonth > 11) {
+          // если прошли декабрь, переходим на следующий год
+          currentMonth = 0;
+          currentYear += 1;
+        }
+      }
+
+      // Сохраняем все созданные monthlyFee записи за раз
+      await this.monthlyFeeRepo.save(monthlyFees);
+      newShartnoma.monthlyFee = monthlyFees;
+    } else {
+      const newIncome = {
+        amount: createShartnomaDto.advancePayment || 0,
+        payment_method:
+          createShartnomaDto.paymentMethod ||
+          (EnumShartnomeTpeTranslation.cash as EnumShartnomeTpeTranslation),
+        is_paid: 'paid',
+        shartnome_id: newShartnoma.id,
+        date: new Date(),
+        user: user,
+        whoCreated: userId.toString(),
       };
-      const monthly_fee = await this.monthlyFeeRepo.save(newMonthlyFee);
-      newShartnoma.monthlyFee = [monthly_fee];
+      const income = await this.incomeRepo.save(newIncome as any);
+      newShartnoma.income = [income];
     }
 
     await this.shartnomeRepo.save(newShartnoma);
