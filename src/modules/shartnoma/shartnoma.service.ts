@@ -83,10 +83,28 @@ export class ShartnomaService {
 
     if (newShartnoma.shartnoma_turi === EnumShartnoma.subscription_fee) {
       const startDate = new Date(createShartnomaDto.texnik_muddati);
-      const endDate = new Date(); // текущая дата
+      const endDate = new Date();
       const monthlyFees = [];
 
-      let currentMonth = startDate.getMonth();
+      // Проверка на первую запись с частичным месяцем
+      const daysInMonth = new Date(
+        startDate.getFullYear(),
+        startDate.getMonth() + 1,
+        0,
+      ).getDate();
+      const remainingDays = daysInMonth - startDate.getDate() + 1;
+      const initialAmount =
+        (remainingDays / daysInMonth) *
+        newShartnoma.service.price *
+        newShartnoma.count;
+
+      monthlyFees.push({
+        date: startDate,
+        shartnoma_id: newShartnoma.id,
+        amount: initialAmount,
+      });
+
+      let currentMonth = startDate.getMonth() + 2;
       let currentYear = startDate.getFullYear();
 
       while (
@@ -94,15 +112,23 @@ export class ShartnomaService {
         (currentYear === endDate.getFullYear() &&
           currentMonth <= endDate.getMonth())
       ) {
-        const monthlyFeeDate = new Date(currentYear, currentMonth, 1); // Устанавливаем первое число месяца
+        const monthlyFeeDate = new Date(currentYear, currentMonth, 1);
 
-        const newMonthlyFee = {
-          date: monthlyFeeDate,
-          shartnoma_id: newShartnoma.id,
-          amount: +newShartnoma.service.price * +newShartnoma.count || 0,
-        };
+        // Проверка на существование записи за текущий месяц и год
+        const feeExists = monthlyFees.some(
+          (fee) =>
+            fee.date.getMonth() === monthlyFeeDate.getMonth() &&
+            fee.date.getFullYear() === monthlyFeeDate.getFullYear(),
+        );
 
-        monthlyFees.push(newMonthlyFee);
+        if (!feeExists) {
+          const newMonthlyFee = {
+            date: monthlyFeeDate,
+            shartnoma_id: newShartnoma.id,
+            amount: newShartnoma.service.price * newShartnoma.count,
+          };
+          monthlyFees.push(newMonthlyFee);
+        }
 
         // Переход к следующему месяцу
         currentMonth += 1;
@@ -112,9 +138,9 @@ export class ShartnomaService {
         }
       }
 
-      // Сохраняем все созданные monthlyFee записи за раз
       await this.monthlyFeeRepo.save(monthlyFees);
       newShartnoma.monthlyFee = monthlyFees;
+      console.log(newShartnoma.monthlyFee);
     } else {
       const newIncome = {
         amount: createShartnomaDto.advancePayment || 0,
