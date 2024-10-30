@@ -101,7 +101,7 @@ export class ShartnomaService {
       monthlyFees.push({
         date: startDate,
         shartnoma_id: newShartnoma.id,
-        amount: initialAmount,
+        amount: Math.floor(initialAmount),
       });
 
       let currentMonth = startDate.getMonth() + 2;
@@ -125,7 +125,7 @@ export class ShartnomaService {
           const newMonthlyFee = {
             date: monthlyFeeDate,
             shartnoma_id: newShartnoma.id,
-            amount: newShartnoma.service.price * newShartnoma.count,
+            amount: Math.floor(newShartnoma.service.price * newShartnoma.count),
           };
           monthlyFees.push(newMonthlyFee);
         }
