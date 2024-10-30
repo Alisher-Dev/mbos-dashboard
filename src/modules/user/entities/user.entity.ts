@@ -15,6 +15,9 @@ export class User extends RootEntity {
   @Column()
   adress: string;
 
+  @Column({ default: '0' })
+  balance: string;
+
   @Column({ nullable: true })
   INN_number: string;
 

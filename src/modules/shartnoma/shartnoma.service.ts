@@ -224,6 +224,7 @@ export class ShartnomaService {
       )
       .where('shartnoma.id = :id', { id })
       .andWhere('shartnoma.isDeleted = :isDeleted', { isDeleted: 0 })
+      .orderBy('monthlyFee.date', 'ASC')
       .getOne();
 
     if (!shartnoma) {

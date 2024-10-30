@@ -9,7 +9,12 @@ import { MonthlyFee } from './entities/monthly_fee.entity';
 import { ApiResponse } from 'src/helpers/apiRespons';
 import { FindAllQuery } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
-import { EnumShartnoma } from 'src/helpers/enum';
+import {
+  EnumIncamIsPaid,
+  EnumIncamTpeTranslation,
+  EnumShartnoma,
+} from 'src/helpers/enum';
+import { Income } from '../income/entities/income.entity';
 
 @Injectable()
 export class MonthlyFeeService {
@@ -19,6 +24,9 @@ export class MonthlyFeeService {
 
     @InjectRepository(MonthlyFee)
     private readonly monthlyFeeRepo: Repository<MonthlyFee>,
+
+    @InjectRepository(Income)
+    private readonly incomeRepo: Repository<Income>,
   ) {}
 
   async create(monthlyFeeDto: CreateMonthlyFeeDto, userId: number) {
@@ -59,13 +67,12 @@ export class MonthlyFeeService {
     return new ApiResponse(monthlyFee, 200, pagination);
   }
 
-  @Cron('0 8 * * *')
+  @Cron('0 8 * * *') // Запускается каждый день в 8:00
   async updateOrCreateMonthlyFees() {
     const today = new Date();
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
 
-    // Проверяем, если сегодня 28, 29, 30 или 31
     if (today.getDate() >= 28) {
       // Получаем все shartnoma
       const allShartnoma = await this.shartnomaRepo.find({
@@ -74,12 +81,13 @@ export class MonthlyFeeService {
       });
 
       for (const shartnoma of allShartnoma) {
+        // Проверяем, истек ли срок действия shartnoma
         if (
           shartnoma.shartnoma_muddati &&
           new Date(shartnoma.shartnoma_muddati) < today
         ) {
           console.log(`Срок действия shartnoma с id = ${shartnoma.id} истек.`);
-          continue;
+          continue; // Пропускаем текущую shartnoma
         }
 
         // Проверяем, создан ли monthlyFee для следующего месяца
@@ -95,7 +103,8 @@ export class MonthlyFeeService {
           const newMonthlyFee = this.monthlyFeeRepo.create({
             date: nextMonth, // Устанавливаем дату первого числа следующего месяца
             shartnoma: shartnoma,
-            amount: +shartnoma.service.price * +shartnoma.count || 0,
+            amount:
+              Math.floor(+shartnoma.service.price * +shartnoma.count) || 0,
           });
 
           await this.monthlyFeeRepo.save(newMonthlyFee);
@@ -129,6 +138,23 @@ export class MonthlyFeeService {
     monthlyFee.whoUpdated = userId.toString();
 
     Object.assign(monthlyFee, updateMonthlyFeeDto);
+
+    if (monthlyFee.paid >= monthlyFee.amount) {
+      const newIncome = this.incomeRepo.create({
+        amount: monthlyFee.paid,
+        payment_method: EnumIncamTpeTranslation.other,
+        is_paid: EnumIncamIsPaid.paid,
+        shartnoma: monthlyFee.shartnoma,
+        date: new Date(),
+        user: monthlyFee.shartnoma.user,
+      });
+
+      if (!newIncome) {
+        throw new NotFoundException('user not found');
+      }
+
+      await this.incomeRepo.save(newIncome);
+    }
 
     await this.monthlyFeeRepo.save(monthlyFee);
     return new ApiResponse('monthlyFee yangilandi', 201);

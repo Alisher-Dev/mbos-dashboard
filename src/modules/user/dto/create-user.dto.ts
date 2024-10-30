@@ -17,4 +17,8 @@ export class CreateUserDto {
   @ApiProperty()
   @IsString()
   INN_number: string;
+
+  @IsOptional()
+  @IsString()
+  balance: string;
 }

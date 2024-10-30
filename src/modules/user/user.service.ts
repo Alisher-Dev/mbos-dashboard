@@ -45,14 +45,14 @@ export class UserService {
       .andWhere(
         new Brackets((qb) => {
           qb.where('user.INN_number LIKE :search', {
-            search: `%${search}%`,
+            search: `%${search || ''}%`,
           }).orWhere('CAST(user.phone AS CHAR) LIKE :search', {
-            search: `%${search}%`,
+            search: `%${search || ''}%`,
           });
         }),
       )
       .take(limit)
-      .skip((page - 1) * limit)
+      .skip(((page - 1) * limit) | 0)
       .getManyAndCount();
 
     const pagination = new Pagination(totalItems, page, limit);

@@ -70,6 +70,12 @@ export class IncomeService {
       newIncome.shartnoma = shartnoma;
     }
 
+    if (!!newIncome.amount && newIncome.is_paid === EnumIncamIsPaid.paid) {
+      await this.userRepo.save({
+        balance: newIncome.amount.toString(),
+      });
+    }
+
     await this.incomeRepo.save(newIncome);
     return new ApiResponse('Income created', 201);
   }
