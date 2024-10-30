@@ -130,7 +130,6 @@ export class ShartnomaService {
           monthlyFees.push(newMonthlyFee);
         }
 
-        // Переход к следующему месяцу
         currentMonth += 1;
         if (currentMonth > 11) {
           currentMonth = 0;
