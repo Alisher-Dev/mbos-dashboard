@@ -18,4 +18,8 @@ export class CreateMonthlyFeeDto {
   @IsNumber()
   @ApiProperty()
   shartnoma_id: number;
+
+  @IsString()
+  @ApiProperty()
+  update_date: string;
 }

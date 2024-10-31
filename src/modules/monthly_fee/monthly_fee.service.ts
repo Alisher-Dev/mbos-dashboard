@@ -126,7 +126,7 @@ export class MonthlyFeeService {
 
   async update(
     id: number,
-    updateMonthlyFeeDto: Partial<UpdateMonthlyFeeDto>,
+    updateMonthlyFeeDto: UpdateMonthlyFeeDto,
     userId: number,
   ) {
     const monthlyFee = await this.monthlyFeeRepo.findOne({
@@ -142,13 +142,14 @@ export class MonthlyFeeService {
 
     Object.assign(monthlyFee, updateMonthlyFeeDto);
 
-    if (updateMonthlyFeeDto.paid && updateMonthlyFeeDto.date) {
+    if (updateMonthlyFeeDto.paid && updateMonthlyFeeDto.update_date) {
       const newBalancHistory = {
         amount: updateMonthlyFeeDto.paid,
-        date: updateMonthlyFeeDto.date,
+        date: updateMonthlyFeeDto.update_date,
         monthly_fee: monthlyFee,
         user: monthlyFee.shartnoma.user,
         purchase_status: EnumShartnomaPaid.no_paid,
+        whoCreated: userId.toString(),
       };
 
       if (!newBalancHistory) {
