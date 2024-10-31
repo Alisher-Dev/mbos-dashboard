@@ -15,6 +15,7 @@ import {
   EnumShartnoma,
 } from 'src/helpers/enum';
 import { Income } from '../income/entities/income.entity';
+import { BalanceHistory } from '../balance_history/entities/balance_history.entity';
 
 @Injectable()
 export class MonthlyFeeService {
@@ -25,8 +26,8 @@ export class MonthlyFeeService {
     @InjectRepository(MonthlyFee)
     private readonly monthlyFeeRepo: Repository<MonthlyFee>,
 
-    @InjectRepository(Income)
-    private readonly incomeRepo: Repository<Income>,
+    @InjectRepository(BalanceHistory)
+    private readonly balancHistoryRepo: Repository<BalanceHistory>,
   ) {}
 
   async create(monthlyFeeDto: CreateMonthlyFeeDto, userId: number) {
@@ -129,7 +130,7 @@ export class MonthlyFeeService {
   ) {
     const monthlyFee = await this.monthlyFeeRepo.findOne({
       where: { id, isDeleted: 0 },
-      relations: ['shartnoma'],
+      relations: { shartnoma: { user: true } },
     });
 
     if (!monthlyFee) {
@@ -139,6 +140,21 @@ export class MonthlyFeeService {
     monthlyFee.whoUpdated = userId.toString();
 
     Object.assign(monthlyFee, updateMonthlyFeeDto);
+
+    if (updateMonthlyFeeDto.paid || updateMonthlyFeeDto.amount) {
+      const newBalancHistory = {
+        amount: updateMonthlyFeeDto.paid,
+        date: updateMonthlyFeeDto.date,
+        monthly_fee: monthlyFee,
+        user: monthlyFee.shartnoma.user,
+      };
+
+      if (!newBalancHistory) {
+        throw new NotFoundException('BalancHistory not found');
+      }
+
+      await this.balancHistoryRepo.save(newBalancHistory);
+    }
 
     await this.monthlyFeeRepo.save(monthlyFee);
     return new ApiResponse('monthlyFee yangilandi', 201);

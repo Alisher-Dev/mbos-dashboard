@@ -4,10 +4,10 @@ import { MonthlyFeeController } from './monthly_fee.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Shartnoma } from '../shartnoma/entities/shartnoma.entity';
 import { MonthlyFee } from './entities/monthly_fee.entity';
-import { Income } from '../income/entities/income.entity';
+import { BalanceHistory } from '../balance_history/entities/balance_history.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Shartnoma, MonthlyFee, Income])],
+  imports: [TypeOrmModule.forFeature([Shartnoma, MonthlyFee, BalanceHistory])],
   controllers: [MonthlyFeeController],
   providers: [MonthlyFeeService],
 })

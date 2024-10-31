@@ -9,6 +9,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ServiceModule } from './modules/service/service.module';
 import { MonthlyFeeModule } from './modules/monthly_fee/monthly_fee.module';
+import { BalanceHistoryModule } from './modules/balance_history/balance_history.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { MonthlyFeeModule } from './modules/monthly_fee/monthly_fee.module';
     DashboardModule,
     ServiceModule,
     MonthlyFeeModule,
+    BalanceHistoryModule,
   ],
 })
 export class AppModule {}

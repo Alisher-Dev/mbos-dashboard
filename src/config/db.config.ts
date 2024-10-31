@@ -6,14 +6,23 @@ import { Income } from 'src/modules/income/entities/income.entity';
 import { Admin } from 'src/modules/admin/entities/admin.entity';
 import { Service } from 'src/modules/service/entities/service.entity';
 import { MonthlyFee } from 'src/modules/monthly_fee/entities/monthly_fee.entity';
+import { BalanceHistory } from 'src/modules/balance_history/entities/balance_history.entity';
 
 export const dbConfig: TypeOrmModuleOptions = {
-  type: 'postgres',
+  type: 'mysql',
   host: envConfig.database.host,
   port: envConfig.database.port,
   username: envConfig.database.user,
   password: envConfig.database.password,
   database: envConfig.database.name,
-  entities: [User, Shartnoma, Income, Admin, Service, MonthlyFee],
+  entities: [
+    User,
+    Shartnoma,
+    Income,
+    Admin,
+    Service,
+    MonthlyFee,
+    BalanceHistory,
+  ],
   synchronize: true,
 };

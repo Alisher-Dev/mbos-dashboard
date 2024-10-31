@@ -86,7 +86,7 @@ export class ShartnomaService {
       const endDate = new Date();
       const monthlyFees = [];
 
-      // Проверка на первую запись с частичным месяцем
+      // Рассчитываем первую запись с частичным месяцем
       const daysInMonth = new Date(
         startDate.getFullYear(),
         startDate.getMonth() + 1,
@@ -104,7 +104,7 @@ export class ShartnomaService {
         amount: Math.floor(initialAmount),
       });
 
-      let currentMonth = startDate.getMonth() + 2;
+      let currentMonth = startDate.getMonth() + 1; // Правильный индекс месяца
       let currentYear = startDate.getFullYear();
 
       while (
@@ -112,9 +112,9 @@ export class ShartnomaService {
         (currentYear === endDate.getFullYear() &&
           currentMonth <= endDate.getMonth())
       ) {
-        const monthlyFeeDate = new Date(currentYear, currentMonth, 1);
+        const monthlyFeeDate = new Date(currentYear, currentMonth, 1); // Устанавливаем на 1-е число месяца
 
-        // Проверка на существование записи за текущий месяц и год
+        // Проверяем на дубли
         const feeExists = monthlyFees.some(
           (fee) =>
             fee.date.getMonth() === monthlyFeeDate.getMonth() &&
@@ -220,6 +220,12 @@ export class ShartnomaService {
         'shartnoma.monthlyFee',
         'monthlyFee',
         'monthlyFee.isDeleted = :isDeleted',
+        { isDeleted: 0 },
+      )
+      .leftJoinAndSelect(
+        'monthlyFee.balance_history',
+        'balance_history',
+        'balance_history.isDeleted = :isDeleted',
         { isDeleted: 0 },
       )
       .where('shartnoma.id = :id', { id })

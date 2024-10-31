@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { RootEntity } from 'src/helpers/root.entity';
+import { BalanceHistory } from 'src/modules/balance_history/entities/balance_history.entity';
 import { Income } from 'src/modules/income/entities/income.entity';
 import { Shartnoma } from 'src/modules/shartnoma/entities/shartnoma.entity';
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 
 @Entity()
 export class User extends RootEntity {
@@ -28,4 +29,7 @@ export class User extends RootEntity {
 
   @OneToMany(() => Income, (income) => income.user, { onDelete: 'CASCADE' })
   income: Income[];
+
+  @OneToMany(() => BalanceHistory, (balance_history) => balance_history.user)
+  balance_history: BalanceHistory[];
 }
