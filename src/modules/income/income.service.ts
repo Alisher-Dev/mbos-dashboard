@@ -11,9 +11,14 @@ import { CreateIncomeDto } from './dto/create-income.dto';
 import { ApiResponse } from 'src/helpers/apiRespons';
 import { FindAllQuery } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
-import { EnumIncamIsPaid, EnumIncamTpeTranslation } from 'src/helpers/enum';
+import {
+  EnumIncamIsPaid,
+  EnumIncamTpeTranslation,
+  EnumShartnomaPaid,
+} from 'src/helpers/enum';
 import { User } from '../user/entities/user.entity';
 import { Shartnoma } from '../shartnoma/entities/shartnoma.entity';
+import { BalanceHistory } from '../balance_history/entities/balance_history.entity';
 
 @Injectable()
 export class IncomeService {
@@ -23,6 +28,9 @@ export class IncomeService {
 
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+
+    @InjectRepository(BalanceHistory)
+    private readonly balanceHistoryRepo: Repository<BalanceHistory>,
 
     @InjectRepository(Shartnoma)
     private readonly shartnomaRepo: Repository<Shartnoma>,
@@ -47,13 +55,13 @@ export class IncomeService {
     ) {
       throw new BadGatewayException("unaka income yarata o'lmaysiz");
     } else {
-      createIncomeDto.is_paid === EnumIncamIsPaid.confirm_payment;
+      createIncomeDto.is_paid = EnumIncamIsPaid.confirm_payment;
     }
 
+    const user = await this.userRepo.findOneBy({
+      id: createIncomeDto.user_id,
+    });
     if (!!createIncomeDto.user_id) {
-      const user = await this.userRepo.findOneBy({
-        id: createIncomeDto.user_id,
-      });
       if (!user) {
         throw new NotFoundException('foydalanuvchi topilmadi');
       }
@@ -70,10 +78,22 @@ export class IncomeService {
       newIncome.shartnoma = shartnoma;
     }
 
-    if (!!newIncome.amount && newIncome.is_paid === EnumIncamIsPaid.paid) {
-      await this.userRepo.save({
-        balance: newIncome.amount.toString(),
-      });
+    if (
+      !!newIncome.amount &&
+      newIncome.is_paid === EnumIncamIsPaid.paid &&
+      user
+    ) {
+      user.balance = (+user.balance + +newIncome.amount).toString();
+      await this.userRepo.save(user);
+
+      const newBalancHistory = {
+        amount: newIncome.amount,
+        date: newIncome.date,
+        user: user,
+        purchase_status: EnumShartnomaPaid.paid,
+      };
+
+      await this.balanceHistoryRepo.save(newBalancHistory);
     }
 
     await this.incomeRepo.save(newIncome);

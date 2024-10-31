@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsString } from 'class-validator';
+import { EnumShartnomaPaid } from 'src/helpers/enum';
 
 export class CreateBalanceHistoryDto {
   @IsNumber()
@@ -17,4 +18,8 @@ export class CreateBalanceHistoryDto {
   @IsNumber()
   @ApiProperty()
   monthly_fee_id: number;
+
+  @IsEnum(EnumShartnomaPaid)
+  @ApiProperty()
+  purchase_status: EnumShartnomaPaid;
 }

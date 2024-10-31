@@ -75,6 +75,12 @@ export class UserService {
         'income.isDeleted = :isDeleted', // Условие только для не удаленных записей
         { isDeleted: 0 },
       )
+      .leftJoinAndSelect(
+        'user.balance_history',
+        'balance_history',
+        'balance_history.isDeleted = :isDeleted', // Условие только для не удаленных записей
+        { isDeleted: 0 },
+      )
       .where('user.id = :id', { id }) // Условие для поиска пользователя по id
       .andWhere('user.isDeleted = :isDeleted', { isDeleted: 0 }) // Условие для пользователя, который не удален
       .getOne(); // Получаем одну запись

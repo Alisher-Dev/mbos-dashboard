@@ -1,3 +1,4 @@
+import { EnumShartnomaPaid } from 'src/helpers/enum';
 import { RootEntity } from 'src/helpers/root.entity';
 import { MonthlyFee } from 'src/modules/monthly_fee/entities/monthly_fee.entity';
 import { User } from 'src/modules/user/entities/user.entity';
@@ -10,6 +11,13 @@ export class BalanceHistory extends RootEntity {
 
   @Column()
   amount: number;
+
+  @Column({
+    type: 'enum',
+    enum: EnumShartnomaPaid,
+    nullable: true,
+  })
+  purchase_status: EnumShartnomaPaid;
 
   @ManyToOne(() => User, (user) => user.balance_history)
   @JoinColumn()

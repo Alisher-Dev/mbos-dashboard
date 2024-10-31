@@ -13,6 +13,7 @@ import {
   EnumIncamIsPaid,
   EnumIncamTpeTranslation,
   EnumShartnoma,
+  EnumShartnomaPaid,
 } from 'src/helpers/enum';
 import { Income } from '../income/entities/income.entity';
 import { BalanceHistory } from '../balance_history/entities/balance_history.entity';
@@ -141,12 +142,13 @@ export class MonthlyFeeService {
 
     Object.assign(monthlyFee, updateMonthlyFeeDto);
 
-    if (updateMonthlyFeeDto.paid || updateMonthlyFeeDto.amount) {
+    if (updateMonthlyFeeDto.paid && updateMonthlyFeeDto.date) {
       const newBalancHistory = {
         amount: updateMonthlyFeeDto.paid,
         date: updateMonthlyFeeDto.date,
         monthly_fee: monthlyFee,
         user: monthlyFee.shartnoma.user,
+        purchase_status: EnumShartnomaPaid.no_paid,
       };
 
       if (!newBalancHistory) {
