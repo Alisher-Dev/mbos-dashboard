@@ -9,7 +9,7 @@ import { MonthlyFee } from 'src/modules/monthly_fee/entities/monthly_fee.entity'
 import { BalanceHistory } from 'src/modules/balance_history/entities/balance_history.entity';
 
 export const dbConfig: TypeOrmModuleOptions = {
-  type: 'mysql',
+  type: 'postgres',
   host: envConfig.database.host,
   port: envConfig.database.port,
   username: envConfig.database.user,
