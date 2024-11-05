@@ -37,7 +37,7 @@ export class UserService {
     return new ApiResponse('Foydalanuvchi yaratish', 201);
   }
 
-  async findAll({ page, limit, search }: FindAllQuery) {
+  async findAll({ page = 1, limit = 10, search = '' }: FindAllQuery) {
     const queryBuilder = this.userRepo.createQueryBuilder('user');
 
     const [users, totalItems] = await queryBuilder
@@ -45,14 +45,14 @@ export class UserService {
       .andWhere(
         new Brackets((qb) => {
           qb.where('user.INN_number LIKE :search', {
-            search: `%${search || ''}%`,
+            search: `%${search}%`,
           }).orWhere('CAST(user.phone AS CHAR) LIKE :search', {
-            search: `%${search || ''}%`,
+            search: `%${search}%`,
           });
         }),
       )
       .take(limit)
-      .skip(((page - 1) * limit) | 0)
+      .skip((Math.max(page, 1) - 1) * limit)
       .getManyAndCount();
 
     const pagination = new Pagination(totalItems, page, limit);
