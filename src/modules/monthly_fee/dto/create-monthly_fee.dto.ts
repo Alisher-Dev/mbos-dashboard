@@ -15,6 +15,11 @@ export class CreateMonthlyFeeDto {
   @ApiProperty()
   paid: number;
 
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  commit: string;
+
   @IsNumber()
   @ApiProperty()
   shartnoma_id: number;
