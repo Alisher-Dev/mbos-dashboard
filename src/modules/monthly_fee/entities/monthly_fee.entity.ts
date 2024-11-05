@@ -14,7 +14,7 @@ export class MonthlyFee extends RootEntity {
   @Column({ default: 0 })
   paid: number;
 
-  @Column()
+  @Column({ nullable: true })
   commit: string;
 
   @ManyToOne(() => Shartnoma, (shartnoma) => shartnoma.monthlyFee)
