@@ -15,7 +15,7 @@ async function bootstrap() {
     }),
   );
 
-  const config = new DocumentBuilder()
+  const config = new DocumentBuilder() // config swagger
     .setTitle('mbos-dashboard')
     .setVersion('1.0')
     .addBearerAuth(
