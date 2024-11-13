@@ -180,8 +180,8 @@ export class ShartnomaService {
       )
       .andWhere(
         new Brackets((qb) => {
-          qb.where('user.F_I_O LIKE :F_I_O', {
-            F_I_O: `%${search || ''}%`,
+          qb.where('user.INN_number LIKE :INN_number', {
+            INN_number: `%${search || ''}%`,
           }).orWhere('CAST(user.phone AS CHAR) LIKE :phone', {
             phone: `%${search || ''}%`,
           });
