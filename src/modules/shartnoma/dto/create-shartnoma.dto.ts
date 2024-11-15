@@ -38,6 +38,11 @@ export class CreateShartnomaDto {
   @ApiProperty()
   isDeleted: number;
 
+  @IsNumber()
+  @IsOptional()
+  @ApiProperty()
+  enabled: 0 | 1;
+
   @IsEnum(EnumShartnoma)
   @IsOptional()
   @ApiProperty()

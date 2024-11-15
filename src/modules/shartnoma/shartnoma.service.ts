@@ -45,6 +45,7 @@ export class ShartnomaService {
 
     const user = await this.userRepo.findOneBy({
       id: +createShartnomaDto.user_id,
+      isDeleted: 0,
     });
 
     if (!user) {
@@ -67,6 +68,7 @@ export class ShartnomaService {
 
     const service = await this.serviceRepo.findOneBy({
       id: +createShartnomaDto.service_id,
+      isDeleted: 0,
     });
     if (!service) {
       throw new NotFoundException('service_id mavjud emas');
@@ -102,6 +104,7 @@ export class ShartnomaService {
         date: startDate,
         shartnoma_id: newShartnoma.id,
         amount: Math.floor(initialAmount),
+        commit: `To’lov ${newShartnoma.service?.title} ${new Date().toLocaleDateString()} oydagi oylik tolov`,
       });
 
       let currentMonth = startDate.getMonth() + 1; // Правильный индекс месяца
@@ -126,6 +129,7 @@ export class ShartnomaService {
             date: monthlyFeeDate,
             shartnoma_id: newShartnoma.id,
             amount: Math.floor(newShartnoma.service.price * newShartnoma.count),
+            commit: `To’lov ${newShartnoma.service?.title} ${new Date().toLocaleDateString()} oydagi oylik tolov`,
           };
           monthlyFees.push(newMonthlyFee);
         }
@@ -151,6 +155,7 @@ export class ShartnomaService {
         date: new Date(),
         user: user,
         whoCreated: userId.toString(),
+        description: `xizmat ${newShartnoma.service?.title} ${new Date().toLocaleDateString()} oydagi tolov yaratildi`,
       };
       const income = await this.incomeRepo.save(newIncome as any);
       newShartnoma.income = [income];
@@ -271,7 +276,7 @@ export class ShartnomaService {
     userId: number,
   ) {
     const shartnoma = await this.shartnomeRepo.findOne({
-      where: { id, isDeleted: 0 },
+      where: { id, isDeleted: 0, enabled: 0 },
       relations: ['income', 'user', 'service'],
     });
 
@@ -321,6 +326,7 @@ export class ShartnomaService {
         user: shartnoma.user,
         shartnoma: shartnoma,
         whoCreated: userId.toString(),
+        description: `xizmat ${shartnoma.service?.title} ${new Date().toLocaleDateString()} oydagi tolov ozgartirildi`,
       };
 
       const income = await this.incomeRepo.save(newIncome as any);

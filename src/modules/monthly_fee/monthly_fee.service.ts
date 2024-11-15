@@ -160,6 +160,7 @@ export class MonthlyFeeService {
         user: monthlyFee.shartnoma.user,
         purchase_status: EnumShartnomaPaid.no_paid,
         whoCreated: userId.toString(),
+        commit: `To’lov ${monthlyFee.shartnoma?.service?.title} uchun ${new Date().toLocaleDateString()} o’zgartirilgandan kegin balansdan yechildi`,
       };
 
       if (!newBalancHistory) {

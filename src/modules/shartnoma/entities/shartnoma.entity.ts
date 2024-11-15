@@ -66,6 +66,9 @@ export class Shartnoma extends RootEntity {
   @Column({ nullable: true })
   tolash_sana: string;
 
+  @Column({ default: 0 })
+  enabled: number;
+
   @ManyToOne(() => User, (user) => user.shartnome, { onDelete: 'CASCADE' })
   user: User;
 
