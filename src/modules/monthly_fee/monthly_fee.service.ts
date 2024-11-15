@@ -4,7 +4,7 @@ import { UpdateMonthlyFeeDto } from './dto/update-monthly_fee.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Shartnoma } from '../shartnoma/entities/shartnoma.entity';
 import { Cron } from '@nestjs/schedule';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { MonthlyFee } from './entities/monthly_fee.entity';
 import { ApiResponse } from 'src/helpers/apiRespons';
 import { FindAllQuery } from 'src/helpers/type';
@@ -51,21 +51,31 @@ export class MonthlyFeeService {
     return new ApiResponse('monthlyFee created', 201);
   }
 
-  async findAll({ page, limit }: FindAllQuery) {
-    const totalItems = await this.monthlyFeeRepo.count({
-      where: {
-        isDeleted: 0,
-      },
-    });
-    const pagination = new Pagination(totalItems, page, limit);
+  async findAll({ page, limit, search }: FindAllQuery) {
+    const [monthlyFee, totalItems] = await this.monthlyFeeRepo
+      .createQueryBuilder('monthly_fee')
+      .where('monthly_fee.isDeleted = :isDeleted', { isDeleted: 0 })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('CAST(commit AS CHAR) LIKE :search', {
+            search: `%${search || ''}%`,
+          })
+            .orWhere('CAST(paid AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(date AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(amount AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            });
+        }),
+      )
+      .take(limit)
+      .skip(((page - 1) * limit) | 0)
+      .getManyAndCount();
 
-    const monthlyFee = await this.monthlyFeeRepo.find({
-      where: {
-        isDeleted: 0,
-      },
-      skip: pagination.offset,
-      take: pagination.limit,
-    });
+    const pagination = new Pagination(totalItems, page, limit);
     return new ApiResponse(monthlyFee, 200, pagination);
   }
 

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, Search } from '@nestjs/common';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { Brackets, Like, Repository } from 'typeorm';
 import { Shartnoma } from '../shartnoma/entities/shartnoma.entity';
 import { ApiResponse } from 'src/helpers/apiRespons';
 import { FindAllQuery, IPayload } from 'src/helpers/type';
@@ -27,30 +27,27 @@ export class ServiceService {
   }
 
   async findAll({ page, limit, search, type }: FindAllQuery) {
-    const totalItems = await this.serviceRepo.count({
-      where: {
-        isDeleted: 0,
-        ...(search && { title: Like(`%${search}%`) }),
-        ...(type !== EnumServiceType.other && {
-          serviceType: type || EnumServiceType.service,
+    const [service, totalItems] = await this.serviceRepo
+      .createQueryBuilder('service')
+      .where('service.isDeleted = :isDeleted', { isDeleted: 0 })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('CAST(title AS CHAR) LIKE :search', {
+            search: `%${search || ''}%`,
+          })
+            .orWhere('CAST(price AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(birliklar AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            });
         }),
-      },
-    });
+      )
+      .take(limit)
+      .skip(((page - 1) * limit) | 0)
+      .getManyAndCount();
 
     const pagination = new Pagination(totalItems, page, limit);
-
-    const service = await this.serviceRepo.find({
-      where: {
-        isDeleted: 0,
-        ...(search && { title: Like(`%${search}%`) }),
-        ...(type !== EnumServiceType.other && {
-          serviceType: type || EnumServiceType.service,
-        }),
-      },
-      skip: pagination.offset,
-      take: pagination.limit,
-    });
-
     return new ApiResponse(service, 200, pagination);
   }
 

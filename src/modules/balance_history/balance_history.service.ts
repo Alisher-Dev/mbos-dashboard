@@ -3,12 +3,13 @@ import { CreateBalanceHistoryDto } from './dto/create-balance_history.dto';
 import { UpdateBalanceHistoryDto } from './dto/update-balance_history.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BalanceHistory } from './entities/balance_history.entity';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { ApiResponse } from 'src/helpers/apiRespons';
 import { FindAllQuery } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
 import { User } from '../user/entities/user.entity';
 import { MonthlyFee } from '../monthly_fee/entities/monthly_fee.entity';
+import { skip } from 'node:test';
 
 @Injectable()
 export class BalanceHistoryService {
@@ -41,23 +42,28 @@ export class BalanceHistoryService {
     return new ApiResponse('balance_historyRepo yaratildi', 201);
   }
 
-  async findAll({ page, limit }: FindAllQuery) {
-    const totalItems = await this.balance_historyRepo.count({
-      where: {
-        isDeleted: 0,
-      },
-    });
+  async findAll({ page, limit, search }: FindAllQuery) {
+    const [balance_history, totalItems] = await this.balance_historyRepo
+      .createQueryBuilder('balance_history')
+      .where('balance_history.isDeleted = :isDeleted', { isDeleted: 0 })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('CAST(date AS CHAR) LiKE :search', {
+            search: `%${search || ''}%`,
+          })
+            .orWhere('CAST(amount AS CHAR) LiKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(purchase_status AS CHAR) LiKE :search', {
+              search: `%${search || ''}%`,
+            });
+        }),
+      )
+      .take(limit)
+      .skip(((page - 1) * limit) | 0)
+      .getManyAndCount();
 
     const pagination = new Pagination(totalItems, page, limit);
-
-    const balance_history = await this.balance_historyRepo.find({
-      where: {
-        isDeleted: 0,
-      },
-      skip: pagination.offset,
-      take: pagination.limit,
-    });
-
     return new ApiResponse(balance_history, 200, pagination);
   }
 

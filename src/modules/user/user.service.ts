@@ -38,21 +38,27 @@ export class UserService {
   }
 
   async findAll({ page = 1, limit = 10, search = '' }: FindAllQuery) {
-    const queryBuilder = this.userRepo.createQueryBuilder('user');
-
-    const [users, totalItems] = await queryBuilder
+    const [users, totalItems] = await this.userRepo
+      .createQueryBuilder('user')
       .where('user.isDeleted = :isDeleted', { isDeleted: 0 })
       .andWhere(
         new Brackets((qb) => {
-          qb.where('user.INN_number LIKE :search', {
+          qb.where('CAST(user.INN_number AS CHAR) LIKE :search', {
             search: `%${search}%`,
-          }).orWhere('CAST(user.phone AS CHAR) LIKE :search', {
-            search: `%${search}%`,
-          });
+          })
+            .orWhere('CAST(user.phone AS CHAR) LIKE :search', {
+              search: `%${search}%`,
+            })
+            .orWhere('CAST(user.adress AS CHAR) LIKE :search', {
+              search: `%${search}%`,
+            })
+            .orWhere('CAST(user.F_I_O AS CHAR) LIKE :search', {
+              search: `%${search}%`,
+            });
         }),
       )
       .take(limit)
-      .skip((Math.max(page, 1) - 1) * limit)
+      .skip(((page - 1) * limit) | 0)
       .getManyAndCount();
 
     const pagination = new Pagination(totalItems, page, limit);

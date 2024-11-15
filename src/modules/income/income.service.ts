@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Income } from './entities/income.entity';
-import { Like, Repository } from 'typeorm';
+import { Brackets, Like, Repository } from 'typeorm';
 import { CreateIncomeDto } from './dto/create-income.dto';
 import { ApiResponse } from 'src/helpers/apiRespons';
 import { FindAllQuery } from 'src/helpers/type';
@@ -101,23 +101,33 @@ export class IncomeService {
   }
 
   async findAll({ page, limit, search }: FindAllQuery) {
-    const totalItems = await this.incomeRepo.count({
-      where: {
-        isDeleted: 0,
-        ...(search && { user: { F_I_O: Like(`%${search}%`) } }),
-      },
-    });
-    const pagination = new Pagination(totalItems, page, limit);
+    const [incomes, totalItems] = await this.incomeRepo
+      .createQueryBuilder('income')
+      .where('income.isDeleted = :isDeleted', { isDeleted: 0 })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('CAST(is_paid AS CHAR) LIKE :search', {
+            search: `%${search || ''}%`,
+          })
+            .orWhere('CAST(payment_method AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(date AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(amount AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(description AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            });
+        }),
+      )
+      .take(limit)
+      .skip(((page - 1) * limit) | 0)
+      .getManyAndCount();
 
-    const incomes = await this.incomeRepo.find({
-      where: {
-        isDeleted: 0,
-        ...(search && { user: { F_I_O: Like(`%${search}%`) } }),
-      },
-      relations: ['user', 'shartnoma'],
-      skip: pagination.offset,
-      take: pagination.limit,
-    });
+    const pagination = new Pagination(totalItems, page, limit);
     return new ApiResponse(incomes, 200, pagination);
   }
 

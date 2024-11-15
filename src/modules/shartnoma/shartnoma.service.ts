@@ -162,13 +162,7 @@ export class ShartnomaService {
   }
 
   async findAll({ page, limit, search, filter }: FindAllQuery) {
-    const totalItems = await this.shartnomeRepo.count({
-      where: { isDeleted: 0 },
-    });
-
-    const pagination = new Pagination(totalItems, page, limit);
-
-    const shartnoma = await this.shartnomeRepo
+    const [shartnoma, totalItems] = await this.shartnomeRepo
       .createQueryBuilder('shartnoma')
       .where('shartnoma.isDeleted = :isDeleted', { isDeleted: 0 })
       .leftJoinAndSelect('shartnoma.user', 'user')
@@ -180,18 +174,50 @@ export class ShartnomaService {
       )
       .andWhere(
         new Brackets((qb) => {
-          qb.where('user.INN_number LIKE :INN_number', {
-            INN_number: `%${search || ''}%`,
-          }).orWhere('CAST(user.phone AS CHAR) LIKE :phone', {
-            phone: `%${search || ''}%`,
-          });
+          qb.where('CAST(user.INN_number AS CHAR) LIKE :search', {
+            search: `%${search || ''}%`,
+          })
+            .orWhere('CAST(user.phone AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(user.F_I_O AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(user.adress AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(shartnoma_nomer AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(shartnoma_muddati AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(texnik_muddati AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(izoh AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(sana AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(tolash_sana AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(service.title AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(service.price AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
+            });
         }),
       )
       .orderBy('shartnoma.tolash_sana', filter || 'ASC')
       .take(limit)
       .skip(((page - 1) * limit) | 0)
-      .getMany();
+      .getManyAndCount();
 
+    const pagination = new Pagination(totalItems, page, limit);
     return new ApiResponse(shartnoma, 200, pagination);
   }
 
@@ -249,7 +275,7 @@ export class ShartnomaService {
       relations: ['income', 'user', 'service'],
     });
 
-    if (!shartnoma && shartnoma.isDeleted) {
+    if (!shartnoma) {
       throw new NotFoundException('shartnoma mavjud emas');
     }
 
