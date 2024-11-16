@@ -5,6 +5,7 @@ export interface FindAllQuery {
   page?: number;
   limit?: number;
   search?: string;
+  id?: number;
   type?: EnumServiceType;
   filter?: 'ASC' | 'DESC';
 }

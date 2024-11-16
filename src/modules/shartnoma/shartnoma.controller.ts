@@ -29,6 +29,12 @@ export class ShartnomaController {
     return this.shartnomaService.create(createShartnomaDto, req.userId);
   }
 
+  @Post(':id')
+  @UseGuards(AuthGuard)
+  refreshManthly_fee(@Param() params: FindAllQuery) {
+    return this.shartnomaService.refreshManthly_fee(params);
+  }
+
   @Get()
   @UseGuards(AuthGuard)
   findAll(@Query() query: FindAllQuery) {
