@@ -11,7 +11,7 @@ export class MonthlyFee extends RootEntity {
   @Column()
   date: Date;
 
-  @Column()
+  @Column({ nullable: true })
   creatrDate: Date;
 
   @Column({ default: 0 })
