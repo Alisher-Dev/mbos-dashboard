@@ -411,7 +411,11 @@ export class ShartnomaService {
   }
 
   async remove(id: number) {
-    const shartnoma = await this.shartnomeRepo.findOneBy({ id });
+    const shartnoma = await this.shartnomeRepo.findOneBy({
+      id,
+      isDeleted: 0,
+      enabled: 0,
+    });
     if (!shartnoma) {
       throw new NotFoundException('shartnoma mavjud emas');
     }
