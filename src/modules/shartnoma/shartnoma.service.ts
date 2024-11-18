@@ -267,6 +267,20 @@ export class ShartnomaService {
     if (!shartnoma) {
       throw new NotFoundException('shartnoma mavjud emas');
     }
+    if (shartnoma.shartnoma_turi === EnumShartnoma.subscription_fee) {
+      let isPaids = 0;
+      shartnoma.monthlyFee.map((el) => {
+        if (el.amount > el.paid) {
+          isPaids += 1;
+        }
+      });
+      if (!!isPaids) {
+        await this.shartnomeRepo.update(
+          { id: shartnoma.id },
+          { purchase_status: EnumShartnomaPaid.paid },
+        );
+      }
+    }
     return new ApiResponse(shartnoma, 200);
   }
 
