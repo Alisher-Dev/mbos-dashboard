@@ -123,6 +123,7 @@ export class IncomeService {
             });
         }),
       )
+      .leftJoinAndSelect('income.user', 'user')
       .take(limit)
       .skip(((page - 1) * limit) | 0)
       .getManyAndCount();
