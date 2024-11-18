@@ -100,8 +100,8 @@ export class IncomeService {
     return new ApiResponse('Income created', 201);
   }
 
-  async findAll({ page, limit, search }: FindAllQuery) {
-    const [incomes, totalItems] = await this.incomeRepo
+  async findAll({ page, limit, search, isPaid }: FindAllQuery) {
+    const query = this.incomeRepo
       .createQueryBuilder('income')
       .where('income.isDeleted = :isDeleted', { isDeleted: 0 })
       .andWhere(
@@ -125,9 +125,15 @@ export class IncomeService {
       )
       .leftJoinAndSelect('income.user', 'user')
       .take(limit)
-      .skip(((page - 1) * limit) | 0)
-      .getManyAndCount();
+      .skip(((page - 1) * limit) | 0);
 
+    if (!!isPaid) {
+      query.andWhere('income.is_paid = :isPaid', {
+        isPaid: EnumIncamIsPaid[isPaid],
+      });
+    }
+
+    const [incomes, totalItems] = await query.getManyAndCount();
     const pagination = new Pagination(totalItems, page, limit);
     return new ApiResponse(incomes, 200, pagination);
   }
