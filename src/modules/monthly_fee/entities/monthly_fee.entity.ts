@@ -11,6 +11,9 @@ export class MonthlyFee extends RootEntity {
   @Column()
   date: Date;
 
+  @Column()
+  creatrDate: Date;
+
   @Column({ default: 0 })
   paid: number;
 

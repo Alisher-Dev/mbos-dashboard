@@ -1,11 +1,12 @@
 import { Request } from 'express';
-import { EnumServiceType } from './enum';
+import { EnumServiceType, EnumShartnomaPaid } from './enum';
 
 export interface FindAllQuery {
   page?: number;
   limit?: number;
   search?: string;
   id?: number;
+  isPaid?: EnumShartnomaPaid;
   type?: EnumServiceType;
   filter?: 'ASC' | 'DESC';
 }

@@ -9,6 +9,7 @@ import { FindAllQuery } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
 import { User } from '../user/entities/user.entity';
 import {
+  EnumIncamIsPaid,
   EnumServiceType,
   EnumShartnoma,
   EnumShartnomaPaid,
@@ -166,8 +167,8 @@ export class ShartnomaService {
     return new ApiResponse('shartnoma created', 201);
   }
 
-  async findAll({ page, limit, search, filter }: FindAllQuery) {
-    const [shartnoma, totalItems] = await this.shartnomeRepo
+  async findAll({ page, limit, search, filter, isPaid }: FindAllQuery) {
+    const query = this.shartnomeRepo
       .createQueryBuilder('shartnoma')
       .where('shartnoma.isDeleted = :isDeleted', { isDeleted: 0 })
       .leftJoinAndSelect('shartnoma.user', 'user')
@@ -219,9 +220,18 @@ export class ShartnomaService {
       )
       .orderBy('shartnoma.tolash_sana', filter || 'ASC')
       .take(limit)
-      .skip(((page - 1) * limit) | 0)
-      .getManyAndCount();
+      .skip(((page - 1) * limit) | 0);
 
+    if (!!isPaid) {
+      query.andWhere('shartnoma.purchase_status = :isPaid', {
+        isPaid:
+          isPaid === 'paid'
+            ? EnumShartnomaPaid.paid
+            : EnumShartnomaPaid.no_paid,
+      });
+    }
+
+    const [shartnoma, totalItems] = await query.getManyAndCount();
     const pagination = new Pagination(totalItems, page, limit);
     return new ApiResponse(shartnoma, 200, pagination);
   }
