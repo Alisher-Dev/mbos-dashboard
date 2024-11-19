@@ -1,3 +1,4 @@
+import { EnumShartnomaPaid } from 'src/helpers/enum';
 import { RootEntity } from 'src/helpers/root.entity';
 import { BalanceHistory } from 'src/modules/balance_history/entities/balance_history.entity';
 import { Shartnoma } from 'src/modules/shartnoma/entities/shartnoma.entity';
@@ -16,6 +17,9 @@ export class MonthlyFee extends RootEntity {
 
   @Column({ default: 0 })
   paid: number;
+
+  @Column({ default: EnumShartnomaPaid.no_paid })
+  purchase_status: EnumShartnomaPaid;
 
   @Column({ nullable: true })
   commit: string;

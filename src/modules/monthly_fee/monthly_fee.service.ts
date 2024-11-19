@@ -45,14 +45,18 @@ export class MonthlyFeeService {
       throw new NotFoundException('shartnoma not found');
     }
 
+    if (newMonthlyFee.amount <= newMonthlyFee.paid) {
+      newMonthlyFee.purchase_status = EnumShartnomaPaid.paid;
+    }
+
     newMonthlyFee.shartnoma = shartnoma;
 
     await this.monthlyFeeRepo.save(newMonthlyFee);
     return new ApiResponse('monthlyFee created', 201);
   }
 
-  async findAll({ page, limit, search }: FindAllQuery) {
-    const [monthlyFee, totalItems] = await this.monthlyFeeRepo
+  async findAll({ page, limit, search, isPaid }: FindAllQuery) {
+    const query = this.monthlyFeeRepo
       .createQueryBuilder('monthly_fee')
       .where('monthly_fee.isDeleted = :isDeleted', { isDeleted: 0 })
       .andWhere(
@@ -72,8 +76,15 @@ export class MonthlyFeeService {
         }),
       )
       .take(limit)
-      .skip(((page - 1) * limit) | 0)
-      .getManyAndCount();
+      .skip(((page - 1) * limit) | 0);
+
+    if (!!isPaid) {
+      query.andWhere('monthly_fee.purchase_status = :isPaid', {
+        isPaid: EnumShartnomaPaid[isPaid],
+      });
+    }
+
+    const [monthlyFee, totalItems] = await query.getManyAndCount();
 
     const pagination = new Pagination(totalItems, page, limit);
     return new ApiResponse(monthlyFee, 200, pagination);
@@ -168,6 +179,9 @@ export class MonthlyFeeService {
       }
 
       await this.balancHistoryRepo.save(newBalancHistory);
+    }
+    if (monthlyFee.amount <= monthlyFee.paid) {
+      monthlyFee.purchase_status = EnumShartnomaPaid.paid;
     }
 
     await this.monthlyFeeRepo.save(monthlyFee);

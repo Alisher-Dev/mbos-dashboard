@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { EnumShartnomaPaid } from 'src/helpers/enum';
 
 export class CreateMonthlyFeeDto {
   @IsNumber()
@@ -23,6 +24,10 @@ export class CreateMonthlyFeeDto {
   @IsNumber()
   @ApiProperty()
   shartnoma_id: number;
+
+  @ApiProperty()
+  @IsEnum({ enum: EnumShartnomaPaid })
+  purchase_status: EnumShartnomaPaid;
 
   @IsString()
   @ApiProperty()
