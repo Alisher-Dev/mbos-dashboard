@@ -91,7 +91,7 @@ export class IncomeService {
         date: newIncome.date,
         user: user,
         purchase_status: EnumShartnomaPaid.paid,
-        commit: `To’lov ${newIncome.shartnoma?.service?.title || 'daromat'} uchun ${new Date().toLocaleDateString()} yaratildi kegin balansga koshildi`,
+        commit: `To’lov uchun ${new Date().toLocaleDateString()} yaratildi kegin balansga koshildi`,
       };
 
       await this.balanceHistoryRepo.save(newBalancHistory);
