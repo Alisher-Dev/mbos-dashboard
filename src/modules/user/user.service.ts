@@ -76,9 +76,9 @@ export class UserService {
         { isDeleted: 0 },
       )
       .leftJoinAndSelect(
-        'user.shartnoma.service',
         'shartnoma.service',
-        'shartnoma.service.isDeleted = :isDeleted',
+        'service',
+        'service.isDeleted = :isDeleted',
         { isDeleted: 0 },
       )
       .leftJoinAndSelect(
