@@ -91,6 +91,7 @@ export class IncomeService {
         date: newIncome.date,
         user: user,
         purchase_status: EnumShartnomaPaid.paid,
+        commit: `To’lov ${newIncome.description || 'daromat'} uchun ${new Date().toLocaleDateString()} yaratildi kegin balansga koshildi`,
       };
 
       await this.balanceHistoryRepo.save(newBalancHistory);
@@ -100,7 +101,7 @@ export class IncomeService {
     return new ApiResponse('Income created', 201);
   }
 
-  async findAll({ page, limit, search, isPaid }: FindAllQuery) {
+  async findAll({ page, limit, search, isPaid, filter }: FindAllQuery) {
     const query = this.incomeRepo
       .createQueryBuilder('income')
       .where('income.isDeleted = :isDeleted', { isDeleted: 0 })
@@ -124,6 +125,7 @@ export class IncomeService {
         }),
       )
       .leftJoinAndSelect('income.user', 'user')
+      .orderBy('income.date', filter || 'ASC')
       .take(limit)
       .skip(((page - 1) * limit) | 0);
 
