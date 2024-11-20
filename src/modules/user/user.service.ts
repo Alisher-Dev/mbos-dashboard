@@ -76,6 +76,12 @@ export class UserService {
         { isDeleted: 0 },
       )
       .leftJoinAndSelect(
+        'user.shartnome.service',
+        'service',
+        'service.isDeleted = :isDeleted',
+        { isDeleted: 0 },
+      )
+      .leftJoinAndSelect(
         'user.income', // Связываем таблицу income
         'income',
         'income.isDeleted = :isDeleted', // Условие только для не удаленных записей

@@ -12,6 +12,9 @@ export class BalanceHistory extends RootEntity {
   @Column()
   amount: number;
 
+  @Column({ nullable: true })
+  commit: string;
+
   @Column({
     type: 'enum',
     enum: EnumShartnomaPaid,
