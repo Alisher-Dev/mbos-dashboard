@@ -25,7 +25,7 @@ export class User extends RootEntity {
   @OneToMany(() => Shartnoma, (shartnoma) => shartnoma.user, {
     onDelete: 'CASCADE',
   })
-  shartnome: Shartnoma[];
+  shartnoma: Shartnoma[];
 
   @OneToMany(() => Income, (income) => income.user, { onDelete: 'CASCADE' })
   income: Income[];
