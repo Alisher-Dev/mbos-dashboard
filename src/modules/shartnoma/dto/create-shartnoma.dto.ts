@@ -10,7 +10,7 @@ import {
 import {
   EnumShartnoma,
   EnumShartnomaPaid,
-  EnumShartnomeTpeTranslation,
+  EnumShartnomaTpeTranslation,
 } from 'src/helpers/enum';
 
 export class CreateShartnomaDto {
@@ -57,9 +57,9 @@ export class CreateShartnomaDto {
   @ApiProperty()
   purchase_status: EnumShartnomaPaid;
 
-  @IsEnum(EnumShartnomeTpeTranslation)
+  @IsEnum(EnumShartnomaTpeTranslation)
   @ApiProperty()
-  paymentMethod: EnumShartnomeTpeTranslation;
+  paymentMethod: EnumShartnomaTpeTranslation;
 
   @IsNumber()
   @ApiProperty()

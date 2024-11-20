@@ -1,7 +1,7 @@
 import {
   EnumShartnoma,
   EnumShartnomaPaid,
-  EnumShartnomeTpeTranslation,
+  EnumShartnomaTpeTranslation,
 } from 'src/helpers/enum';
 import { RootEntity } from 'src/helpers/root.entity';
 import { Income } from 'src/modules/income/entities/income.entity';
@@ -49,10 +49,10 @@ export class Shartnoma extends RootEntity {
 
   @Column({
     type: 'enum',
-    enum: EnumShartnomeTpeTranslation,
-    default: EnumShartnomeTpeTranslation.cash,
+    enum: EnumShartnomaTpeTranslation,
+    default: EnumShartnomaTpeTranslation.cash,
   })
-  paymentMethod: EnumShartnomeTpeTranslation;
+  paymentMethod: EnumShartnomaTpeTranslation;
 
   @Column({ type: 'date' })
   shartnoma_muddati: Date;
@@ -69,7 +69,7 @@ export class Shartnoma extends RootEntity {
   @Column({ default: 0 })
   enabled: number;
 
-  @ManyToOne(() => User, (user) => user.shartnome, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.shartnoma, { onDelete: 'CASCADE' })
   user: User;
 
   @OneToMany(() => Income, (income) => income.shartnoma, {

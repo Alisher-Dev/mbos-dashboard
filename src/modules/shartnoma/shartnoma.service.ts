@@ -13,7 +13,7 @@ import {
   EnumServiceType,
   EnumShartnoma,
   EnumShartnomaPaid,
-  EnumShartnomeTpeTranslation,
+  EnumShartnomaTpeTranslation,
 } from 'src/helpers/enum';
 import { Income } from '../income/entities/income.entity';
 import { Service } from '../service/entities/service.entity';
@@ -24,7 +24,7 @@ import e from 'express';
 export class ShartnomaService {
   constructor(
     @InjectRepository(Shartnoma)
-    private readonly shartnomeRepo: Repository<Shartnoma>,
+    private readonly shartnomaRepo: Repository<Shartnoma>,
 
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
@@ -40,7 +40,7 @@ export class ShartnomaService {
   ) {}
 
   async create(createShartnomaDto: CreateShartnomaDto, userId: number) {
-    const newShartnoma = this.shartnomeRepo.create(createShartnomaDto);
+    const newShartnoma = this.shartnomaRepo.create(createShartnomaDto);
 
     newShartnoma.whoCreated = userId.toString();
 
@@ -54,7 +54,7 @@ export class ShartnomaService {
     }
     newShartnoma.user = user;
 
-    const shartnomaOld = await this.shartnomeRepo.find({
+    const shartnomaOld = await this.shartnomaRepo.find({
       order: { id: 'DESC' },
     });
     if (
@@ -150,9 +150,9 @@ export class ShartnomaService {
         amount: createShartnomaDto.advancePayment || 0,
         payment_method:
           createShartnomaDto.paymentMethod ||
-          (EnumShartnomeTpeTranslation.cash as EnumShartnomeTpeTranslation),
+          (EnumShartnomaTpeTranslation.cash as EnumShartnomaTpeTranslation),
         is_paid: 'paid',
-        shartnome_id: newShartnoma.id,
+        shartnoma_id: newShartnoma.id,
         date: new Date(),
         user: user,
         whoCreated: userId.toString(),
@@ -162,13 +162,13 @@ export class ShartnomaService {
       newShartnoma.income = [income];
     }
 
-    await this.shartnomeRepo.save(newShartnoma);
+    await this.shartnomaRepo.save(newShartnoma);
 
     return new ApiResponse('shartnoma created', 201);
   }
 
   async findAll({ page, limit, search, filter, isPaid }: FindAllQuery) {
-    const query = this.shartnomeRepo
+    const query = this.shartnomaRepo
       .createQueryBuilder('shartnoma')
       .where('shartnoma.isDeleted = :isDeleted', { isDeleted: 0 })
       .leftJoinAndSelect('shartnoma.user', 'user')
@@ -237,7 +237,7 @@ export class ShartnomaService {
   }
 
   async findOne(id: number) {
-    const shartnoma = await this.shartnomeRepo
+    const shartnoma = await this.shartnomaRepo
       .createQueryBuilder('shartnoma')
       .leftJoinAndSelect(
         'shartnoma.income',
@@ -285,7 +285,7 @@ export class ShartnomaService {
         }
       });
       if (!!isPaids) {
-        await this.shartnomeRepo.update(
+        await this.shartnomaRepo.update(
           { id: shartnoma.id },
           { purchase_status: EnumShartnomaPaid.paid },
         );
@@ -296,10 +296,10 @@ export class ShartnomaService {
 
   async update(
     id: number,
-    updateShartnomeDto: UpdateShartnomaDto,
+    updateShartnomaDto: UpdateShartnomaDto,
     userId: number,
   ) {
-    const shartnoma = await this.shartnomeRepo.findOne({
+    const shartnoma = await this.shartnomaRepo.findOne({
       where: { id, isDeleted: 0, enabled: 0 },
       relations: ['income', 'user', 'service'],
     });
@@ -308,11 +308,11 @@ export class ShartnomaService {
       throw new NotFoundException('shartnoma mavjud emas');
     }
 
-    Object.assign(shartnoma, updateShartnomeDto);
+    Object.assign(shartnoma, updateShartnomaDto);
 
-    if (!!updateShartnomeDto.user_id) {
+    if (!!updateShartnomaDto.user_id) {
       const user = await this.userRepo.findOneBy({
-        id: +updateShartnomeDto.user_id,
+        id: +updateShartnomaDto.user_id,
       });
       if (!user) {
         throw new NotFoundException('user_id mavjud emas');
@@ -320,9 +320,9 @@ export class ShartnomaService {
       shartnoma.user = user;
     }
 
-    if (!!updateShartnomeDto.service_id) {
+    if (!!updateShartnomaDto.service_id) {
       const service = await this.serviceRepo.findOneBy({
-        id: +updateShartnomeDto.service_id,
+        id: +updateShartnomaDto.service_id,
       });
       if (!service) {
         throw new NotFoundException('service_id mavjud emas');
@@ -330,10 +330,10 @@ export class ShartnomaService {
       shartnoma.service = service;
     }
 
-    if (updateShartnomeDto.advancePayment) {
+    if (updateShartnomaDto.advancePayment) {
       shartnoma.remainingPayment =
         shartnoma.service.price * shartnoma.count -
-        updateShartnomeDto.advancePayment;
+        updateShartnomaDto.advancePayment;
 
       shartnoma.purchase_status =
         shartnoma.remainingPayment <= 0
@@ -341,7 +341,7 @@ export class ShartnomaService {
           : EnumShartnomaPaid.no_paid;
     }
 
-    if (updateShartnomeDto.advancePayment && updateShartnomeDto.paymentMethod) {
+    if (updateShartnomaDto.advancePayment && updateShartnomaDto.paymentMethod) {
       const newIncome = {
         amount: shartnoma.advancePayment || 0,
         payment_method: shartnoma.paymentMethod as unknown,
@@ -360,12 +360,12 @@ export class ShartnomaService {
 
     shartnoma.whoUpdated = userId.toString();
 
-    await this.shartnomeRepo.save(shartnoma);
+    await this.shartnomaRepo.save(shartnoma);
     return new ApiResponse(`shartnoma o'gartirildi`, 201);
   }
 
   async refreshManthly_fee({ id }: FindAllQuery) {
-    const shartnoma = await this.shartnomeRepo.findOne({
+    const shartnoma = await this.shartnomaRepo.findOne({
       where: { id, isDeleted: 0, enabled: 0 },
       relations: ['service', 'monthlyFee'],
     });
@@ -435,7 +435,7 @@ export class ShartnomaService {
   }
 
   async remove(id: number) {
-    const shartnoma = await this.shartnomeRepo.findOneBy({
+    const shartnoma = await this.shartnomaRepo.findOneBy({
       id,
       isDeleted: 0,
       enabled: 0,
@@ -443,7 +443,7 @@ export class ShartnomaService {
     if (!shartnoma) {
       throw new NotFoundException('shartnoma mavjud emas');
     }
-    await this.shartnomeRepo.save({ ...shartnoma, isDeleted: 1 });
+    await this.shartnomaRepo.save({ ...shartnoma, isDeleted: 1 });
     return new ApiResponse(`shartnoma o'chirildi`);
   }
 }

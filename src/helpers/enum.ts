@@ -8,7 +8,7 @@ export enum EnumShartnomaPaid {
   no_paid = 'no_paid',
 }
 
-export enum EnumShartnomeTpeTranslation {
+export enum EnumShartnomaTpeTranslation {
   cash = 'cash',
   translation = 'translation',
   online = 'online',
