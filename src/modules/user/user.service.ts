@@ -70,13 +70,13 @@ export class UserService {
     const user = await this.userRepo
       .createQueryBuilder('user')
       .leftJoinAndSelect(
-        'user.shartnome',
-        'shartnome',
-        'shartnome.isDeleted = :isDeleted',
+        'user.shartnoma',
+        'shartnoma',
+        'shartnoma.isDeleted = :isDeleted',
         { isDeleted: 0 },
       )
       .leftJoinAndSelect(
-        'user.shartnome.service',
+        'shartnoma.service',
         'service',
         'service.isDeleted = :isDeleted',
         { isDeleted: 0 },
