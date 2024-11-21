@@ -43,16 +43,16 @@ export class UserService {
       .where('user.isDeleted = :isDeleted', { isDeleted: 0 })
       .andWhere(
         new Brackets((qb) => {
-          qb.where('CAST(user.INN_number AS CHAR) LIKE :search', {
+          qb.where('CAST(user.INN_number AS TEXT) LIKE :search', {
             search: `%${search || ''}%`,
           })
-            .orWhere('CAST(user.phone AS CHAR) LIKE :search', {
+            .orWhere('CAST(user.phone AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(user.adress AS CHAR) LIKE :search', {
+            .orWhere('CAST(user.adress AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(user.F_I_O AS CHAR) LIKE :search', {
+            .orWhere('CAST(user.F_I_O AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             });
         }),
