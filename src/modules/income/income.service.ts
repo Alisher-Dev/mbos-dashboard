@@ -110,22 +110,22 @@ export class IncomeService {
       })
       .andWhere(
         new Brackets((qb) => {
-          qb.where('CAST(is_paid AS CHAR) LIKE :search', {
+          qb.where('CAST(is_paid AS TEXT) LIKE :search', {
             search: `%${search || ''}%`,
           })
-            .orWhere('CAST(payment_method AS CHAR) LIKE :search', {
+            .orWhere('CAST(payment_method AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(date AS CHAR) LIKE :search', {
+            .orWhere('CAST(date AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(amount AS CHAR) LIKE :search', {
+            .orWhere('CAST(amount AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(description AS CHAR) LIKE :search', {
+            .orWhere('CAST(description AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(user.INN_number AS CHAR) LIKE :search', {
+            .orWhere('CAST(user.INN_number AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             });
         }),

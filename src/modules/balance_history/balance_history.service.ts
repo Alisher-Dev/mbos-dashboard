@@ -48,13 +48,13 @@ export class BalanceHistoryService {
       .where('balance_history.isDeleted = :isDeleted', { isDeleted: 0 })
       .andWhere(
         new Brackets((qb) => {
-          qb.where('CAST(date AS CHAR) LiKE :search', {
+          qb.where('CAST(date AS TEXT) LiKE :search', {
             search: `%${search || ''}%`,
           })
-            .orWhere('CAST(amount AS CHAR) LiKE :search', {
+            .orWhere('CAST(amount AS TEXT) LiKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(purchase_status AS CHAR) LiKE :search', {
+            .orWhere('CAST(purchase_status AS TEXT) LiKE :search', {
               search: `%${search || ''}%`,
             });
         }),

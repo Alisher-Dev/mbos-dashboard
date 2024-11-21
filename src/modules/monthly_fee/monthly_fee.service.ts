@@ -61,16 +61,16 @@ export class MonthlyFeeService {
       .where('monthly_fee.isDeleted = :isDeleted', { isDeleted: 0 })
       .andWhere(
         new Brackets((qb) => {
-          qb.where('CAST(commit AS CHAR) LIKE :search', {
+          qb.where('CAST(commit AS TEXT) LIKE :search', {
             search: `%${search || ''}%`,
           })
-            .orWhere('CAST(paid AS CHAR) LIKE :search', {
+            .orWhere('CAST(paid AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(date AS CHAR) LIKE :search', {
+            .orWhere('CAST(date AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(amount AS CHAR) LIKE :search', {
+            .orWhere('CAST(amount AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             });
         }),

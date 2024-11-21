@@ -32,13 +32,13 @@ export class ServiceService {
       .where('service.isDeleted = :isDeleted', { isDeleted: 0 })
       .andWhere(
         new Brackets((qb) => {
-          qb.where('CAST(title AS CHAR) LIKE :search', {
+          qb.where('CAST(title AS TEXT) LIKE :search', {
             search: `%${search || ''}%`,
           })
-            .orWhere('CAST(price AS CHAR) LIKE :search', {
+            .orWhere('CAST(price AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(birliklar AS CHAR) LIKE :search', {
+            .orWhere('CAST(birliklar AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             });
         }),

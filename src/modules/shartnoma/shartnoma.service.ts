@@ -185,40 +185,40 @@ export class ShartnomaService {
       )
       .andWhere(
         new Brackets((qb) => {
-          qb.where('CAST(user.INN_number AS CHAR) LIKE :search', {
+          qb.where('CAST(user.INN_number AS TEXT) LIKE :search', {
             search: `%${search || ''}%`,
           })
-            .orWhere('CAST(user.phone AS CHAR) LIKE :search', {
+            .orWhere('CAST(user.phone AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(user.F_I_O AS CHAR) LIKE :search', {
+            .orWhere('CAST(user.F_I_O AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(user.adress AS CHAR) LIKE :search', {
+            .orWhere('CAST(user.adress AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(shartnoma_nomer AS CHAR) LIKE :search', {
+            .orWhere('CAST(shartnoma_nomer AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(shartnoma_muddati AS CHAR) LIKE :search', {
+            .orWhere('CAST(shartnoma_muddati AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(texnik_muddati AS CHAR) LIKE :search', {
+            .orWhere('CAST(texnik_muddati AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(izoh AS CHAR) LIKE :search', {
+            .orWhere('CAST(izoh AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(sana AS CHAR) LIKE :search', {
+            .orWhere('CAST(sana AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(tolash_sana AS CHAR) LIKE :search', {
+            .orWhere('CAST(tolash_sana AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(service.title AS CHAR) LIKE :search', {
+            .orWhere('CAST(service.title AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             })
-            .orWhere('CAST(service.price AS CHAR) LIKE :search', {
+            .orWhere('CAST(service.price AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
             });
         }),
