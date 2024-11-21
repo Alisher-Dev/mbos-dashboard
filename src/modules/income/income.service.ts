@@ -105,6 +105,9 @@ export class IncomeService {
     const query = this.incomeRepo
       .createQueryBuilder('income')
       .where('income.isDeleted = :isDeleted', { isDeleted: 0 })
+      .leftJoinAndSelect('income.user', 'user', 'user.isDeleted = :isDeleted', {
+        isDeleted: 0,
+      })
       .andWhere(
         new Brackets((qb) => {
           qb.where('CAST(is_paid AS CHAR) LIKE :search', {
@@ -121,10 +124,12 @@ export class IncomeService {
             })
             .orWhere('CAST(description AS CHAR) LIKE :search', {
               search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(user.INN_number AS CHAR) LIKE :search', {
+              search: `%${search || ''}%`,
             });
         }),
       )
-      .leftJoinAndSelect('income.user', 'user')
       .orderBy('income.date', filter || 'ASC')
       .take(limit)
       .skip(((page - 1) * limit) | 0);

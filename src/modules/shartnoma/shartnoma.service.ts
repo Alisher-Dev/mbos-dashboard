@@ -171,7 +171,12 @@ export class ShartnomaService {
     const query = this.shartnomaRepo
       .createQueryBuilder('shartnoma')
       .where('shartnoma.isDeleted = :isDeleted', { isDeleted: 0 })
-      .leftJoinAndSelect('shartnoma.user', 'user')
+      .leftJoinAndSelect(
+        'shartnoma.user',
+        'user',
+        'user.isDeleted = :isDeleted',
+        { isDeleted: 0 },
+      )
       .leftJoinAndSelect(
         'shartnoma.service',
         'service',
