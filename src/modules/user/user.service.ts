@@ -44,16 +44,16 @@ export class UserService {
       .andWhere(
         new Brackets((qb) => {
           qb.where('CAST(user.INN_number AS CHAR) LIKE :search', {
-            search: `%${search}%`,
+            search: `%${search || ''}%`,
           })
             .orWhere('CAST(user.phone AS CHAR) LIKE :search', {
-              search: `%${search}%`,
+              search: `%${search || ''}%`,
             })
             .orWhere('CAST(user.adress AS CHAR) LIKE :search', {
-              search: `%${search}%`,
+              search: `%${search || ''}%`,
             })
             .orWhere('CAST(user.F_I_O AS CHAR) LIKE :search', {
-              search: `%${search}%`,
+              search: `%${search || ''}%`,
             });
         }),
       )
