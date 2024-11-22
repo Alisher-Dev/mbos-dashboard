@@ -15,7 +15,7 @@ export class ServerPaid extends RootEntity {
   @ManyToOne(() => Server, (server) => server.serverPaid)
   server: Server;
 
-  @Column('double')
+  @Column()
   price: number;
 
   @Column('date', { nullable: true })

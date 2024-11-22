@@ -18,7 +18,7 @@ export class Server extends RootEntity {
   @Column({ length: 255 })
   plan: string;
 
-  @Column('double')
+  @Column()
   price: number;
 
   @Column('date')
