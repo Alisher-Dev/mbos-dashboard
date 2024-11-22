@@ -127,6 +127,18 @@ export class IncomeService {
             })
             .orWhere('CAST(user.INN_number AS TEXT) LIKE :search', {
               search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(user.F_I_O AS TEXT) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(user.phone AS TEXT) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(user.adress AS TEXT) LIKE :search', {
+              search: `%${search || ''}%`,
+            })
+            .orWhere('CAST(user.balance AS TEXT) LIKE :search', {
+              search: `%${search || ''}%`,
             });
         }),
       )
