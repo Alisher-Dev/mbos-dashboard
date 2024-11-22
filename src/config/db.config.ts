@@ -11,7 +11,7 @@ import { Server } from 'src/modules/server/entities/server.entity';
 import { ServerPaid } from 'src/modules/server-paid/entities/server-paid.entity';
 
 export const dbConfig: TypeOrmModuleOptions = {
-  type: 'mysql',
+  type: 'postgres',
   host: envConfig.database.host,
   port: envConfig.database.port,
   username: envConfig.database.user,
