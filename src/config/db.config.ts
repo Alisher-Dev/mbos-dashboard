@@ -7,9 +7,11 @@ import { Admin } from 'src/modules/admin/entities/admin.entity';
 import { Service } from 'src/modules/service/entities/service.entity';
 import { MonthlyFee } from 'src/modules/monthly_fee/entities/monthly_fee.entity';
 import { BalanceHistory } from 'src/modules/balance_history/entities/balance_history.entity';
+import { Server } from 'src/modules/server/entities/server.entity';
+import { ServerPaid } from 'src/modules/server-paid/entities/server-paid.entity';
 
 export const dbConfig: TypeOrmModuleOptions = {
-  type: 'postgres',
+  type: 'mysql',
   host: envConfig.database.host,
   port: envConfig.database.port,
   username: envConfig.database.user,
@@ -23,6 +25,8 @@ export const dbConfig: TypeOrmModuleOptions = {
     Service,
     MonthlyFee,
     BalanceHistory,
+    Server,
+    ServerPaid,
   ],
   synchronize: true,
 };

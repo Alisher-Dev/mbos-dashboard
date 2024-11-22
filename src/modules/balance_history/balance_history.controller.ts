@@ -15,8 +15,10 @@ import { CreateBalanceHistoryDto } from './dto/create-balance_history.dto';
 import { UpdateBalanceHistoryDto } from './dto/update-balance_history.dto';
 import { AuthGuard } from 'src/helpers/authGuard';
 import { FindAllQuery, IPayload } from 'src/helpers/type';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('balance-history')
+@ApiTags('balance-history')
 export class BalanceHistoryController {
   constructor(private readonly balanceHistoryService: BalanceHistoryService) {}
   @Post()

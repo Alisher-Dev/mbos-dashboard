@@ -2,6 +2,7 @@ import { config } from 'dotenv';
 config();
 
 export const envConfig = {
+  telegram: process.env.TOKEN,
   port: process.env.PORT,
   database: {
     name: process.env.DB_NAME,

@@ -10,6 +10,8 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ServiceModule } from './modules/service/service.module';
 import { MonthlyFeeModule } from './modules/monthly_fee/monthly_fee.module';
 import { BalanceHistoryModule } from './modules/balance_history/balance_history.module';
+import { ServerModule } from './modules/server/server.module';
+import { ServerPaidModule } from './modules/server-paid/server-paid.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { BalanceHistoryModule } from './modules/balance_history/balance_history.
     UserModule,
     ShartnomaModule,
     IncomeModule,
+    ServerModule,
+    ServerPaidModule,
     AdminModule,
     DashboardModule,
     ServiceModule,
