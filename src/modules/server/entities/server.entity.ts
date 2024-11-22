@@ -30,9 +30,6 @@ export class Server extends RootEntity {
   @Column({ default: 1 })
   status: number;
 
-  @DeleteDateColumn({ nullable: true })
-  deletedAt?: Date;
-
   @Column({ nullable: true })
   register_id: number;
 

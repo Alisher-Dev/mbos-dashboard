@@ -27,9 +27,6 @@ export class ServerPaid extends RootEntity {
   @Column({ nullable: true })
   status: number;
 
-  @DeleteDateColumn({ nullable: true })
-  deletedAt?: Date;
-
   @Column({ nullable: true })
   register_id: number;
 

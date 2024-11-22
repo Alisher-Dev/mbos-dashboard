@@ -22,6 +22,7 @@ export class ServerPaidService {
     const newServerPaid = this.serverPaidRepo.create(createServerDto);
     const server = await this.serverRepo.findOneBy({
       id: createServerDto.server_id,
+      isDeleted: 0,
     });
 
     if (!server) {
@@ -38,7 +39,7 @@ export class ServerPaidService {
   async findAll({ page, limit }: FindAllQuery) {
     const [serverPaid, count] = await this.serverPaidRepo
       .createQueryBuilder('serverPaid')
-      .where('serverPaid.deletedAt IS NULL')
+      .where('server.isDeleted = :isDeleted', { isDeleted: 0 })
       .take(limit)
       .skip(((page - 1) * limit) | 0)
       .getManyAndCount();
@@ -50,7 +51,7 @@ export class ServerPaidService {
   async findOne(id: number) {
     const serverPaid = await this.serverPaidRepo
       .createQueryBuilder('serverPaid')
-      .where('serverPaid.deletedAt IS NULL')
+      .where('server.isDeleted = :isDeleted', { isDeleted: 0 })
       .andWhere('serverPaid.id = :id', { id })
       .getOne();
 
@@ -58,7 +59,10 @@ export class ServerPaidService {
   }
 
   async update(id: number, updateServerDto: UpdateServerPaidDto) {
-    const serverPaid = await this.serverPaidRepo.findOneBy({ id });
+    const serverPaid = await this.serverPaidRepo.findOneBy({
+      id,
+      isDeleted: 0,
+    });
 
     if (!serverPaid) {
       throw new NotFoundException('serverPaid does not exist');
@@ -67,6 +71,7 @@ export class ServerPaidService {
     if (!!updateServerDto.server_id) {
       const server = await this.serverRepo.findOneBy({
         id: updateServerDto.server_id,
+        isDeleted: 0,
       });
       if (!server) {
         throw new NotFoundException('server does not exist');
@@ -80,7 +85,13 @@ export class ServerPaidService {
   }
 
   async remove(id: number) {
-    await this.serverPaidRepo.softDelete(id);
-    return new ApiResponse('serverPaid deleted');
+    const serverPaid = await this.serverPaidRepo.findOneBy({ id });
+
+    if (!serverPaid) {
+      throw new NotFoundException('serverPaid mavjud emas');
+    }
+
+    await this.serverPaidRepo.save({ ...serverPaid, isDeleted: 1 });
+    return new ApiResponse("monthlyFee o'chirildi");
   }
 }

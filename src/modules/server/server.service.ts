@@ -23,7 +23,7 @@ export class ServerService {
   }
 
   async notification() {
-    const server = await this.serverRepo.find();
+    const server = await this.serverRepo.find({ where: { isDeleted: 0 } });
 
     const notifications = server.map(async (el) => {
       const timeDiff = Math.abs(
@@ -66,7 +66,7 @@ export class ServerService {
   async findAll({ page, limit }: FindAllQuery) {
     const [server, count] = await this.serverRepo
       .createQueryBuilder('server')
-      .where('server.deletedAt IS NULL')
+      .where('server.isDeleted = :isDeleted', { isDeleted: 0 })
       .take(limit)
       .skip(((page - 1) * limit) | 0)
       .getManyAndCount();
@@ -78,7 +78,7 @@ export class ServerService {
   async findOne(id: number) {
     const server = await this.serverRepo
       .createQueryBuilder('server')
-      .where('server.deletedAt IS NULL')
+      .where('server.isDeleted = :isDeleted', { isDeleted: 0 })
       .andWhere('server.id = :id', { id })
       .getOne();
 
@@ -86,7 +86,10 @@ export class ServerService {
   }
 
   async update(id: number, updateServerDto: UpdateServerDto) {
-    const server = await this.serverRepo.update({ id }, updateServerDto);
+    const server = await this.serverRepo.update(
+      { id, isDeleted: 0 },
+      updateServerDto,
+    );
     if (!server.affected) {
       throw new NotFoundException('server does not exist');
     }
@@ -95,7 +98,13 @@ export class ServerService {
   }
 
   async remove(id: number) {
-    await this.serverRepo.softDelete(id);
-    return new ApiResponse('server deleted');
+    const server = await this.serverRepo.findOneBy({ id });
+
+    if (!server) {
+      throw new NotFoundException('server mavjud emas');
+    }
+
+    await this.serverRepo.save({ ...server, isDeleted: 1 });
+    return new ApiResponse("monthlyFee o'chirildi");
   }
 }
