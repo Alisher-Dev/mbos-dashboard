@@ -8,7 +8,7 @@ import { ApiResponse } from 'src/helpers/apiRespons';
 import { Pagination } from 'src/helpers/pagination';
 import axios from 'axios';
 import { envConfig } from 'src/config/env.config';
-import { FindAllQuery } from 'src/helpers/type';
+import { FindAllQuery, IPayload } from 'src/helpers/type';
 
 @Injectable()
 export class ServerService {
@@ -16,8 +16,9 @@ export class ServerService {
     @InjectRepository(Server)
     private readonly serverRepo: Repository<Server>,
   ) {}
-  async create(createServerDto: CreateServerDto) {
+  async create(createServerDto: CreateServerDto, { userId }: IPayload) {
     const newServer = this.serverRepo.create(createServerDto);
+    newServer.whoCreated = userId.toString();
     await this.serverRepo.save(newServer);
     return new ApiResponse('server created');
   }
@@ -85,10 +86,14 @@ export class ServerService {
     return new ApiResponse(server);
   }
 
-  async update(id: number, updateServerDto: UpdateServerDto) {
+  async update(
+    id: number,
+    updateServerDto: UpdateServerDto,
+    { userId }: IPayload,
+  ) {
     const server = await this.serverRepo.update(
       { id, isDeleted: 0 },
-      updateServerDto,
+      { ...updateServerDto, whoUpdated: userId.toString() },
     );
     if (!server.affected) {
       throw new NotFoundException('server does not exist');

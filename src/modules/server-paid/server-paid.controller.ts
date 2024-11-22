@@ -7,12 +7,13 @@ import {
   Param,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ServerPaidService } from './server-paid.service';
 import { CreateServerPaidDto } from './dto/create-server-paid.dto';
 import { UpdateServerPaidDto } from './dto/update-server-paid.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { FindAllQuery } from 'src/helpers/type';
+import { FindAllQuery, IPayload } from 'src/helpers/type';
 import { AuthGuard } from 'src/helpers/authGuard';
 
 @Controller('server-paid')
@@ -22,8 +23,11 @@ export class ServerPaidController {
 
   @UseGuards(AuthGuard)
   @Post()
-  create(@Body() createServerPaidDto: CreateServerPaidDto) {
-    return this.serverPaidService.create(createServerPaidDto);
+  create(
+    @Body() createServerPaidDto: CreateServerPaidDto,
+    @Req() req: IPayload,
+  ) {
+    return this.serverPaidService.create(createServerPaidDto, req);
   }
 
   @Get()
@@ -41,8 +45,9 @@ export class ServerPaidController {
   update(
     @Param('id') id: string,
     @Body() updateServerPaidDto: UpdateServerPaidDto,
+    @Req() req: IPayload,
   ) {
-    return this.serverPaidService.update(+id, updateServerPaidDto);
+    return this.serverPaidService.update(+id, updateServerPaidDto, req);
   }
 
   @UseGuards(AuthGuard)

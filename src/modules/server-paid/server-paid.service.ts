@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ServerPaid } from './entities/server-paid.entity';
 import { Repository } from 'typeorm';
 import { ApiResponse } from 'src/helpers/apiRespons';
-import { FindAllQuery } from 'src/helpers/type';
+import { FindAllQuery, IPayload } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
 import { Server } from '../server/entities/server.entity';
 
@@ -18,7 +18,7 @@ export class ServerPaidService {
     @InjectRepository(Server)
     private readonly serverRepo: Repository<Server>,
   ) {}
-  async create(createServerDto: CreateServerPaidDto) {
+  async create(createServerDto: CreateServerPaidDto, { userId }: IPayload) {
     const newServerPaid = this.serverPaidRepo.create(createServerDto);
     const server = await this.serverRepo.findOneBy({
       id: createServerDto.server_id,
@@ -29,8 +29,13 @@ export class ServerPaidService {
       throw new NotFoundException('server does not exist');
     }
 
+    newServerPaid.whoCreated = userId.toString();
     newServerPaid.server = server;
     await this.serverPaidRepo.save(newServerPaid);
+    await this.serverRepo.save({
+      ...server,
+      date_term: createServerDto.date_term,
+    });
     return new ApiResponse('server-paid created');
   }
 
@@ -58,7 +63,11 @@ export class ServerPaidService {
     return new ApiResponse(serverPaid);
   }
 
-  async update(id: number, updateServerDto: UpdateServerPaidDto) {
+  async update(
+    id: number,
+    updateServerDto: UpdateServerPaidDto,
+    { userId }: IPayload,
+  ) {
     const serverPaid = await this.serverPaidRepo.findOneBy({
       id,
       isDeleted: 0,
@@ -67,12 +76,23 @@ export class ServerPaidService {
     if (!serverPaid) {
       throw new NotFoundException('serverPaid does not exist');
     }
+    serverPaid.whoUpdated = userId.toString();
+
+    Object.assign(serverPaid, updateServerDto);
+
+    const server = await this.serverRepo.findOneBy({
+      id: updateServerDto.server_id,
+      isDeleted: 0,
+    });
+
+    if (!!updateServerDto.date_term) {
+      await this.serverRepo.save({
+        ...server,
+        date_term: updateServerDto.date_term,
+      });
+    }
 
     if (!!updateServerDto.server_id) {
-      const server = await this.serverRepo.findOneBy({
-        id: updateServerDto.server_id,
-        isDeleted: 0,
-      });
       if (!server) {
         throw new NotFoundException('server does not exist');
       }
