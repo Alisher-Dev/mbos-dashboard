@@ -129,7 +129,10 @@ export class MonthlyFeeService {
             amount:
               Math.floor(+shartnoma.service.price * +shartnoma.count) || 0,
           });
-
+          await this.shartnomaRepo.save({
+            ...shartnoma,
+            purchase_status: EnumShartnomaPaid.no_paid,
+          });
           await this.monthlyFeeRepo.save(newMonthlyFee);
           console.log(
             `Создан новый monthlyFee для shartnoma с id = ${shartnoma.id}`,

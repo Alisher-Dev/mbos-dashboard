@@ -77,12 +77,23 @@ export class ServerPaidService {
     if (!serverPaid) {
       throw new NotFoundException('serverPaid does not exist');
     }
+    serverPaid.whoUpdated = userId.toString();
+
+    Object.assign(serverPaid, updateServerDto);
+
+    const server = await this.serverRepo.findOneBy({
+      id: updateServerDto.server_id,
+      isDeleted: 0,
+    });
+
+    if (!!updateServerDto.date_term) {
+      await this.serverRepo.save({
+        ...server,
+        date_term: updateServerDto.date_term,
+      });
+    }
 
     if (!!updateServerDto.server_id) {
-      const server = await this.serverRepo.findOneBy({
-        id: updateServerDto.server_id,
-        isDeleted: 0,
-      });
       if (!server) {
         throw new NotFoundException('server does not exist');
       }
