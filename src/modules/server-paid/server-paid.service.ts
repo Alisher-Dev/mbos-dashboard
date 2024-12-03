@@ -36,6 +36,7 @@ export class ServerPaidService {
     await this.serverPaidRepo.save({ ...newServerPaid, register_id });
     await this.serverRepo.save({
       ...server,
+      status: 1,
       date_term: newServerPaid.date_term,
     });
     return new ApiResponse('server-paid created');
