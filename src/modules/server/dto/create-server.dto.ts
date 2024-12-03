@@ -33,14 +33,6 @@ export class CreateServerDto {
   @IsOptional()
   status: number;
 
-  @ApiProperty()
-  @IsNumber()
-  register_id: number;
-
-  @IsNumber()
-  @ApiProperty()
-  modify_id: number;
-
   @IsNumber()
   @ApiProperty()
   @IsOptional()

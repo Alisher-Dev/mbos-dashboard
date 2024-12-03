@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ServerPaid } from './entities/server-paid.entity';
 import { Repository } from 'typeorm';
 import { ApiResponse } from 'src/helpers/apiRespons';
-import { FindAllQuery } from 'src/helpers/type';
+import { FindAllQuery, IPayload } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
 import { Server } from '../server/entities/server.entity';
 
@@ -18,7 +18,7 @@ export class ServerPaidService {
     @InjectRepository(Server)
     private readonly serverRepo: Repository<Server>,
   ) {}
-  async create(createServerDto: CreateServerPaidDto) {
+  async create(createServerDto: CreateServerPaidDto, { userId }: IPayload) {
     const newServerPaid = this.serverPaidRepo.create(createServerDto);
     const server = await this.serverRepo.findOneBy({
       id: createServerDto.server_id,
@@ -29,12 +29,17 @@ export class ServerPaidService {
       throw new NotFoundException('server does not exist');
     }
 
+    const register_id = Number(userId);
+
     newServerPaid.server = server;
-    await this.serverPaidRepo.save(newServerPaid);
+
+    await this.serverPaidRepo.save({ ...newServerPaid, register_id });
+    await this.serverRepo.save({
+      ...server,
+      date_term: newServerPaid.date_term,
+    });
     return new ApiResponse('server-paid created');
   }
-
-  async notification() {}
 
   async findAll({ page, limit }: FindAllQuery) {
     const [serverPaid, count] = await this.serverPaidRepo
@@ -58,11 +63,16 @@ export class ServerPaidService {
     return new ApiResponse(serverPaid);
   }
 
-  async update(id: number, updateServerDto: UpdateServerPaidDto) {
+  async update(
+    id: number,
+    updateServerDto: UpdateServerPaidDto,
+    { userId }: IPayload,
+  ) {
     const serverPaid = await this.serverPaidRepo.findOneBy({
       id,
       isDeleted: 0,
     });
+    const modify_id = Number(userId);
 
     if (!serverPaid) {
       throw new NotFoundException('serverPaid does not exist');
@@ -79,7 +89,7 @@ export class ServerPaidService {
       serverPaid.server = server;
     }
 
-    await this.serverPaidRepo.save(serverPaid);
+    await this.serverPaidRepo.save({ ...serverPaid, modify_id });
 
     return new ApiResponse('serverPaid updated');
   }

@@ -7,13 +7,14 @@ import {
   Param,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ServerService } from './server.service';
 import { CreateServerDto } from './dto/create-server.dto';
 import { UpdateServerDto } from './dto/update-server.dto';
 import { Cron } from '@nestjs/schedule';
 import { ApiTags } from '@nestjs/swagger';
-import { FindAllQuery } from 'src/helpers/type';
+import { FindAllQuery, IPayload } from 'src/helpers/type';
 import { AuthGuard } from 'src/helpers/authGuard';
 
 @Controller('server')
@@ -23,8 +24,8 @@ export class ServerController {
 
   @Post()
   @UseGuards(AuthGuard)
-  create(@Body() createServerDto: CreateServerDto) {
-    return this.serverService.create(createServerDto);
+  create(@Body() createServerDto: CreateServerDto, @Req() req: IPayload) {
+    return this.serverService.create(createServerDto, req);
   }
 
   @Get()
@@ -46,8 +47,12 @@ export class ServerController {
 
   @UseGuards(AuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateServerDto: UpdateServerDto) {
-    return this.serverService.update(+id, updateServerDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateServerDto: UpdateServerDto,
+    @Req() req: IPayload,
+  ) {
+    return this.serverService.update(+id, updateServerDto, req);
   }
 
   @UseGuards(AuthGuard)
