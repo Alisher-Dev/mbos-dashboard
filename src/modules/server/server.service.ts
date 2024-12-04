@@ -83,6 +83,12 @@ export class ServerService {
     const server = await this.serverRepo
       .createQueryBuilder('server')
       .where('server.isDeleted = :isDeleted', { isDeleted: 0 })
+      .leftJoinAndSelect(
+        'server.serverPaid',
+        'serverPaid',
+        'serverPaid.isDeleted = :isDeleted',
+        { isDeleted: 0 },
+      )
       .andWhere('server.id = :id', { id })
       .getOne();
 
