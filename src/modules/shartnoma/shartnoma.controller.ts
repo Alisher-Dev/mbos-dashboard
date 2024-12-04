@@ -35,6 +35,11 @@ export class ShartnomaController {
     return this.shartnomaService.refreshManthly_fee(params);
   }
 
+  @Get('/cron')
+  generate_status() {
+    return this.shartnomaService.generate_status();
+  }
+
   @Get()
   @UseGuards(AuthGuard)
   findAll(@Query() query: FindAllQuery) {
