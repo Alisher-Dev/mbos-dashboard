@@ -175,59 +175,63 @@ export class ShartnomaService {
         'shartnoma.user',
         'user',
         'user.isDeleted = :isDeleted',
-        { isDeleted: 0 },
+        {
+          isDeleted: 0,
+        },
       )
       .leftJoinAndSelect(
         'shartnoma.service',
         'service',
         'service.isDeleted = :isDeleted',
         { isDeleted: 0 },
-      )
-      .andWhere(
+      );
+
+    // Добавление поискового фильтра
+    if (search) {
+      query.andWhere(
         new Brackets((qb) => {
           qb.where('CAST(user.INN_number AS TEXT) LIKE :search', {
-            search: `%${search || ''}%`,
+            search: `%${search}%`,
           })
             .orWhere('CAST(user.phone AS TEXT) LIKE :search', {
-              search: `%${search || ''}%`,
+              search: `%${search}%`,
             })
             .orWhere('CAST(user.F_I_O AS TEXT) LIKE :search', {
-              search: `%${search || ''}%`,
+              search: `%${search}%`,
             })
             .orWhere('CAST(user.adress AS TEXT) LIKE :search', {
-              search: `%${search || ''}%`,
+              search: `%${search}%`,
             })
-            .orWhere('CAST(shartnoma_nomer AS TEXT) LIKE :search', {
-              search: `%${search || ''}%`,
+            .orWhere('CAST(shartnoma.shartnoma_nomer AS TEXT) LIKE :search', {
+              search: `%${search}%`,
             })
-            .orWhere('CAST(shartnoma_muddati AS TEXT) LIKE :search', {
-              search: `%${search || ''}%`,
+            .orWhere('CAST(shartnoma.shartnoma_muddati AS TEXT) LIKE :search', {
+              search: `%${search}%`,
             })
-            .orWhere('CAST(texnik_muddati AS TEXT) LIKE :search', {
-              search: `%${search || ''}%`,
+            .orWhere('CAST(shartnoma.texnik_muddati AS TEXT) LIKE :search', {
+              search: `%${search}%`,
             })
-            .orWhere('CAST(izoh AS TEXT) LIKE :search', {
-              search: `%${search || ''}%`,
+            .orWhere('CAST(shartnoma.izoh AS TEXT) LIKE :search', {
+              search: `%${search}%`,
             })
-            .orWhere('CAST(sana AS TEXT) LIKE :search', {
-              search: `%${search || ''}%`,
+            .orWhere('CAST(shartnoma.sana AS TEXT) LIKE :search', {
+              search: `%${search}%`,
             })
-            .orWhere('CAST(tolash_sana AS TEXT) LIKE :search', {
-              search: `%${search || ''}%`,
+            .orWhere('CAST(shartnoma.tolash_sana AS TEXT) LIKE :search', {
+              search: `%${search}%`,
             })
             .orWhere('CAST(service.title AS TEXT) LIKE :search', {
-              search: `%${search || ''}%`,
+              search: `%${search}%`,
             })
             .orWhere('CAST(service.price AS TEXT) LIKE :search', {
-              search: `%${search || ''}%`,
+              search: `%${search}%`,
             });
         }),
-      )
-      .orderBy('shartnoma.tolash_sana', filter || 'ASC')
-      .take(limit)
-      .skip(((page - 1) * limit) | 0);
+      );
+    }
 
-    if (!!isPaid) {
+    // Добавление фильтра по статусу оплаты
+    if (isPaid) {
       query.andWhere('shartnoma.purchase_status = :isPaid', {
         isPaid:
           isPaid === 'paid'
@@ -236,7 +240,16 @@ export class ShartnomaService {
       });
     }
 
+    // Сортировка и пагинация
+    query
+      .orderBy('shartnoma.tolash_sana', filter || 'ASC')
+      .take(limit)
+      .skip((page - 1) * limit || 0);
+
+    // Выполнение запроса
     const [shartnoma, totalItems] = await query.getManyAndCount();
+
+    // Формирование ответа
     const pagination = new Pagination(totalItems, page, limit);
     return new ApiResponse(shartnoma, 200, pagination);
   }

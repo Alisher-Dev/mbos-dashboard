@@ -31,7 +31,7 @@ export class MonthlyFeeController {
     return this.monthlyFeeService.create(createMonthlyFeeDto, req.userId);
   }
 
-  @Get('/test')
+  @Get('/cron')
   Find() {
     return this.monthlyFeeService.updateOrCreateMonthlyFees();
   }
