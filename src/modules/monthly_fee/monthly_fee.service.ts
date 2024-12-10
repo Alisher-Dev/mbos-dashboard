@@ -9,13 +9,7 @@ import { MonthlyFee } from './entities/monthly_fee.entity';
 import { ApiResponse } from 'src/helpers/apiRespons';
 import { FindAllQuery } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
-import {
-  EnumIncamIsPaid,
-  EnumIncamTpeTranslation,
-  EnumShartnoma,
-  EnumShartnomaPaid,
-} from 'src/helpers/enum';
-import { Income } from '../income/entities/income.entity';
+import { EnumShartnoma, EnumShartnomaPaid } from 'src/helpers/enum';
 import { BalanceHistory } from '../balance_history/entities/balance_history.entity';
 
 @Injectable()
@@ -93,8 +87,6 @@ export class MonthlyFeeService {
   @Cron('0 8 * * *') // Запускается каждый день в 8:00
   async updateOrCreateMonthlyFees() {
     const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
 
     if (today.getDate() >= 28) {
       const allShartnoma = await this.shartnomaRepo.find({
@@ -104,60 +96,63 @@ export class MonthlyFeeService {
 
       await Promise.all(
         allShartnoma.map(async (shartnoma) => {
-          if (
-            shartnoma.shartnoma_muddati &&
-            new Date(shartnoma.shartnoma_muddati) < today
-          ) {
-            console.log(
-              `Срок действия shartnoma с id = ${shartnoma.id} истек.`,
-            );
-            return;
-          }
-
-          const nextMonth = new Date(today);
-          nextMonth.setMonth(currentMonth + 1);
-          nextMonth.setDate(1);
-
-          const nextMonthKey = `${nextMonth.getFullYear()}-${nextMonth
-            .getMonth()
-            .toString()
-            .padStart(2, '0')}`;
-          const existingMonthlyFee = shartnoma.monthlyFee.find(
-            (fee) =>
-              `${new Date(fee.date).getFullYear()}-${(
-                new Date(fee.date).getMonth() + 1
-              )
-                .toString()
-                .padStart(2, '0')}` === nextMonthKey,
-          );
-
-          if (!existingMonthlyFee) {
-            const servicePrice = parseFloat(
-              shartnoma.service.price.toString() || '0',
-            );
-            const count = parseInt(shartnoma.count.toString() || '0', 10);
-            const amount = Math.floor(+servicePrice * +count) || 0;
-
-            const newMonthlyFee = this.monthlyFeeRepo.create({
-              date: nextMonth,
-              shartnoma: shartnoma,
-              amount: amount,
-            });
-
-            if (shartnoma.purchase_status !== EnumShartnomaPaid.no_paid) {
-              await this.shartnomaRepo.save({
-                ...shartnoma,
-                purchase_status: EnumShartnomaPaid.no_paid,
-              });
+          try {
+            // Проверка срока действия shartnoma
+            if (
+              shartnoma.shartnoma_muddati &&
+              !isNaN(new Date(shartnoma.shartnoma_muddati).getTime()) &&
+              new Date(shartnoma.shartnoma_muddati) < today
+            ) {
+              console.log(
+                `Срок действия shartnoma с id = ${shartnoma.id} истек.`,
+              );
+              return;
             }
 
-            await this.monthlyFeeRepo.save(newMonthlyFee);
-            console.log(
-              `Создан новый monthlyFee для shartnoma с id = ${shartnoma.id}`,
+            // Подготовка следующего месяца
+            const nextMonth = new Date(today);
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            nextMonth.setDate(1); // Первое число следующего месяца
+
+            const nextMonthKey = nextMonth.toISOString().slice(0, 7);
+            const existingMonthlyFee = shartnoma.monthlyFee.find(
+              (fee) =>
+                new Date(fee.date).toISOString().slice(0, 7) === nextMonthKey,
             );
-          } else {
-            console.log(
-              `Запись monthlyFee за следующий месяц уже существует для shartnoma с id = ${shartnoma.id}`,
+
+            if (!existingMonthlyFee) {
+              const servicePrice = parseFloat(
+                shartnoma.service.price.toString() || '0',
+              );
+              const count = parseInt(shartnoma.count.toString() || '0', 10);
+              const amount = Math.floor(servicePrice * count) || 0;
+
+              const newMonthlyFee = this.monthlyFeeRepo.create({
+                date: nextMonth,
+                shartnoma: shartnoma,
+                amount: amount,
+              });
+
+              if (shartnoma.purchase_status !== EnumShartnomaPaid.no_paid) {
+                await this.shartnomaRepo.save({
+                  ...shartnoma,
+                  purchase_status: EnumShartnomaPaid.no_paid,
+                });
+              }
+
+              await this.monthlyFeeRepo.save(newMonthlyFee);
+              console.log(
+                `Создан новый monthlyFee для shartnoma с id = ${shartnoma.id}`,
+              );
+            } else {
+              console.log(
+                `Запись monthlyFee за следующий месяц уже существует для shartnoma с id = ${shartnoma.id}`,
+              );
+            }
+          } catch (error) {
+            console.error(
+              `Ошибка при обработке shartnoma с id = ${shartnoma.id}:`,
+              error,
             );
           }
         }),

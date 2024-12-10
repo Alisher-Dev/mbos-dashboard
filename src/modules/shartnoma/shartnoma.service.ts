@@ -418,75 +418,75 @@ export class ShartnomaService {
     return new ApiResponse(`shartnoma o'gartirildi`, 201);
   }
 
-  async refreshManthly_fee({ id }: FindAllQuery) {
-    const shartnoma = await this.shartnomaRepo.findOne({
-      where: { id, isDeleted: 0, enabled: 0 },
-      relations: ['service', 'monthlyFee'],
-    });
+  // async refreshManthly_fee({ id }: FindAllQuery) {
+  //   const shartnoma = await this.shartnomaRepo.findOne({
+  //     where: { id, isDeleted: 0, enabled: 0 },
+  //     relations: ['service', 'monthlyFee'],
+  //   });
 
-    if (!shartnoma) {
-      throw new NotFoundException('shartnoma mavjud emas');
-    }
+  //   if (!shartnoma) {
+  //     throw new NotFoundException('shartnoma mavjud emas');
+  //   }
 
-    if (!shartnoma.service) {
-      throw new NotFoundException('service shartnomadagi mavjud emas');
-    }
+  //   if (!shartnoma.service) {
+  //     throw new NotFoundException('service shartnomadagi mavjud emas');
+  //   }
 
-    // Удаляем старые записи
-    await this.monthlyFeeRepo.update(
-      { shartnoma: { id } },
-      { isDeleted: 1, commit: 'monthly_feeni kayta ishlashda yangilandi' },
-    );
+  //   // Удаляем старые записи
+  //   await this.monthlyFeeRepo.update(
+  //     { shartnoma: { id } },
+  //     { isDeleted: 1, commit: 'monthly_feeni kayta ishlashda yangilandi' },
+  //   );
 
-    if (shartnoma.shartnoma_turi === EnumShartnoma.subscription_fee) {
-      const startDate = new Date(shartnoma.texnik_muddati);
-      const endDate = new Date();
-      const monthlyFees = [];
+  //   if (shartnoma.shartnoma_turi === EnumShartnoma.subscription_fee) {
+  //     const startDate = new Date(shartnoma.texnik_muddati);
+  //     const endDate = new Date();
+  //     const monthlyFees = [];
 
-      // Первая запись с частичным месяцем
-      const daysInMonth = new Date(
-        startDate.getFullYear(),
-        startDate.getMonth() + 1,
-        0,
-      ).getDate();
-      const remainingDays = daysInMonth - startDate.getDate() + 1;
-      const initialAmount =
-        (remainingDays / daysInMonth) *
-        shartnoma.service.price *
-        shartnoma.count;
+  //     // Первая запись с частичным месяцем
+  //     const daysInMonth = new Date(
+  //       startDate.getFullYear(),
+  //       startDate.getMonth() + 1,
+  //       0,
+  //     ).getDate();
+  //     const remainingDays = daysInMonth - startDate.getDate() + 1;
+  //     const initialAmount =
+  //       (remainingDays / daysInMonth) *
+  //       shartnoma.service.price *
+  //       shartnoma.count;
 
-      monthlyFees.push({
-        date: startDate,
-        shartnoma: shartnoma,
-        amount: Math.floor(initialAmount),
-        commit: `To’lov ${shartnoma.service?.title} ${new Date().toLocaleDateString()} oydagi oylik tolov`,
-      });
+  //     monthlyFees.push({
+  //       date: startDate,
+  //       shartnoma: shartnoma,
+  //       amount: Math.floor(initialAmount),
+  //       commit: `To’lov ${shartnoma.service?.title} ${new Date().toLocaleDateString()} oydagi oylik tolov`,
+  //     });
 
-      // Полные месяцы
-      let currentDate = new Date(
-        startDate.getFullYear(),
-        startDate.getMonth() + 1,
-        1,
-      );
+  //     // Полные месяцы
+  //     let currentDate = new Date(
+  //       startDate.getFullYear(),
+  //       startDate.getMonth() + 1,
+  //       1,
+  //     );
 
-      while (currentDate <= endDate) {
-        monthlyFees.push({
-          date: new Date(currentDate),
-          shartnoma: shartnoma,
-          amount: Math.floor(shartnoma.service.price * shartnoma.count),
-          commit: `To’lov ${shartnoma.service?.title} ${currentDate.toLocaleDateString()} oydagi oylik tolov`,
-        });
+  //     while (currentDate <= endDate) {
+  //       monthlyFees.push({
+  //         date: new Date(currentDate),
+  //         shartnoma: shartnoma,
+  //         amount: Math.floor(shartnoma.service.price * shartnoma.count),
+  //         commit: `To’lov ${shartnoma.service?.title} ${currentDate.toLocaleDateString()} oydagi oylik tolov`,
+  //       });
 
-        currentDate.setMonth(currentDate.getMonth() + 1); // Переход к следующему месяцу
-      }
+  //       currentDate.setMonth(currentDate.getMonth() + 1); // Переход к следующему месяцу
+  //     }
 
-      await this.monthlyFeeRepo.save(monthlyFees);
-      shartnoma.monthlyFee = monthlyFees;
-      console.log(shartnoma.monthlyFee);
-    }
+  //     await this.monthlyFeeRepo.save(monthlyFees);
+  //     shartnoma.monthlyFee = monthlyFees;
+  //     console.log(shartnoma.monthlyFee);
+  //   }
 
-    return new ApiResponse('shartnomani monthly_fee kayta ishlandi');
-  }
+  //   return new ApiResponse('shartnomani monthly_fee kayta ishlandi');
+  // }
 
   async remove(id: number) {
     const shartnoma = await this.shartnomaRepo.findOneBy({

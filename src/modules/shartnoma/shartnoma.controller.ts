@@ -29,12 +29,13 @@ export class ShartnomaController {
     return this.shartnomaService.create(createShartnomaDto, req.userId);
   }
 
-  @Post(':id')
-  @UseGuards(AuthGuard)
-  refreshManthly_fee(@Param() params: FindAllQuery) {
-    return this.shartnomaService.refreshManthly_fee(params);
-  }
+  // @Post(':id')
+  // @UseGuards(AuthGuard)
+  // refreshManthly_fee(@Param() params: FindAllQuery) {
+  //   return this.shartnomaService.refreshManthly_fee(params);
+  // }
 
+  @UseGuards(AuthGuard)
   @Get('/cron')
   generate_status() {
     return this.shartnomaService.generate_status();
