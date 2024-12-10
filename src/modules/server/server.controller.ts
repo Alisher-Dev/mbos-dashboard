@@ -12,7 +12,6 @@ import {
 import { ServerService } from './server.service';
 import { CreateServerDto } from './dto/create-server.dto';
 import { UpdateServerDto } from './dto/update-server.dto';
-import { Cron } from '@nestjs/schedule';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { FindAllQuery, IPayload } from 'src/helpers/type';
 import { AuthGuard } from 'src/helpers/authGuard';
@@ -33,9 +32,7 @@ export class ServerController {
     return this.serverService.findAll(param);
   }
 
-  @Cron('0 */5 * * * *')
   @Post('/notification')
-  @UseGuards(AuthGuard)
   notification() {
     return this.serverService.notification();
   }

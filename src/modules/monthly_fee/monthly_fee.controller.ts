@@ -31,7 +31,6 @@ export class MonthlyFeeController {
     return this.monthlyFeeService.create(createMonthlyFeeDto, req.userId);
   }
 
-  @UseGuards(AuthGuard)
   @Get('/cron')
   Find() {
     return this.monthlyFeeService.updateOrCreateMonthlyFees();

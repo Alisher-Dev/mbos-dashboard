@@ -35,7 +35,6 @@ export class ShartnomaController {
   //   return this.shartnomaService.refreshManthly_fee(params);
   // }
 
-  @UseGuards(AuthGuard)
   @Get('/cron')
   generate_status() {
     return this.shartnomaService.generate_status();
