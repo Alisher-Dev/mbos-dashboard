@@ -32,7 +32,7 @@ export class ServerController {
     return this.serverService.findAll(param);
   }
 
-  @Post('/notification')
+  @Get('/cron')
   notification() {
     return this.serverService.notification();
   }
