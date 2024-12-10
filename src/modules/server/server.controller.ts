@@ -13,11 +13,12 @@ import { ServerService } from './server.service';
 import { CreateServerDto } from './dto/create-server.dto';
 import { UpdateServerDto } from './dto/update-server.dto';
 import { Cron } from '@nestjs/schedule';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { FindAllQuery, IPayload } from 'src/helpers/type';
 import { AuthGuard } from 'src/helpers/authGuard';
 
 @Controller('server')
+@ApiBearerAuth('accessToken')
 @ApiTags('server')
 export class ServerController {
   constructor(private readonly serverService: ServerService) {}
@@ -34,8 +35,8 @@ export class ServerController {
   }
 
   @Cron('0 8 * * *')
-  @UseGuards(AuthGuard)
   @Post('/notification')
+  @UseGuards(AuthGuard)
   notification() {
     return this.serverService.notification();
   }

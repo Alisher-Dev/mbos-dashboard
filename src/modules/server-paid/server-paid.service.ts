@@ -45,8 +45,8 @@ export class ServerPaidService {
   async findAll({ page, limit }: FindAllQuery) {
     const [serverPaid, count] = await this.serverPaidRepo
       .createQueryBuilder('serverPaid')
-      .where('server.isDeleted = :isDeleted', { isDeleted: 0 })
-      .take(limit)
+      .where('serverPaid.isDeleted = :isDeleted', { isDeleted: 0 })
+      .take(limit | 0)
       .skip(((page - 1) * limit) | 0)
       .getManyAndCount();
 
@@ -57,7 +57,7 @@ export class ServerPaidService {
   async findOne(id: number) {
     const serverPaid = await this.serverPaidRepo
       .createQueryBuilder('serverPaid')
-      .where('server.isDeleted = :isDeleted', { isDeleted: 0 })
+      .where('serverPaid.isDeleted = :isDeleted', { isDeleted: 0 })
       .andWhere('serverPaid.id = :id', { id })
       .getOne();
 

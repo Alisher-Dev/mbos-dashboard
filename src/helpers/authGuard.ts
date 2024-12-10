@@ -13,13 +13,22 @@ export class AuthGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
-    const accessToken = request.headers.authorization?.split(' ')[1];
 
+    const authHeader = request.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new UnauthorizedException('Invalid Authorization header');
+    }
+
+    const accessToken = authHeader.split(' ')[1];
     if (!accessToken) {
       throw new UnauthorizedException('You must be logged in');
     }
 
     const payload = token.verifyAccessToken(accessToken);
+
+    if (!payload || !payload.userId) {
+      throw new UnauthorizedException('Invalid token payload');
+    }
 
     request.userId = payload.userId;
 
