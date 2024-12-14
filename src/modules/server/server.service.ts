@@ -27,7 +27,7 @@ export class ServerService {
     return new ApiResponse('server created');
   }
 
-  @Cron('0 8 * * *')
+  @Cron('0 */5 * * * *')
   async notification() {
     const server = await this.serverRepo.find({ where: { isDeleted: 0 } });
 
@@ -40,7 +40,7 @@ export class ServerService {
       if (dayDiff <= 7) {
         const token = envConfig.telegram;
         const url = `https://api.telegram.org/bot${token}/sendMessage`;
-        const chat_id = [86419074, 5050279125, 7234548633];
+        const chat_id = [1994937115]; //86419074, 5050279125, 7234548633
 
         const message = `${el.name} serverining muddati ${dayDiff} kun (${el.date_term}) qoldi.
   Tarif: ${el.plan}
