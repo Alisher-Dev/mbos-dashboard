@@ -169,7 +169,7 @@ export class MonthlyFeeService {
   ) {
     const monthlyFee = await this.monthlyFeeRepo.findOne({
       where: { id, isDeleted: 0 },
-      relations: { shartnoma: { user: true } },
+      relations: { shartnoma: { user: true, service: true } },
     });
 
     if (!monthlyFee) {
@@ -180,15 +180,15 @@ export class MonthlyFeeService {
 
     Object.assign(monthlyFee, updateMonthlyFeeDto);
 
-    if (updateMonthlyFeeDto.paid && updateMonthlyFeeDto.update_date) {
+    if (updateMonthlyFeeDto.paid && updateMonthlyFeeDto.date) {
       const newBalancHistory = {
         amount: updateMonthlyFeeDto.paid,
-        date: updateMonthlyFeeDto.update_date,
+        date: updateMonthlyFeeDto.date,
         monthly_fee: monthlyFee,
         user: monthlyFee.shartnoma.user,
         purchase_status: EnumShartnomaPaid.no_paid,
         whoCreated: userId.toString(),
-        commit: `To’lov ${monthlyFee.shartnoma?.service?.title} uchun ${new Date().toLocaleDateString()} o’zgartirilgandan kegin balansdan yechildi`,
+        commit: `To’lov ${monthlyFee.shartnoma?.service?.title || `monthlyFee = ${monthlyFee.id}`} uchun ${new Date().toLocaleDateString()} o’zgartirilgandan kegin balansdan yechildi`,
       };
 
       if (!newBalancHistory) {
