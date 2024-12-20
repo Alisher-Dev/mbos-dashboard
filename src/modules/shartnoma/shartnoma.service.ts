@@ -255,54 +255,6 @@ export class ShartnomaService {
     return new ApiResponse(shartnoma, 200, pagination);
   }
 
-  @Cron('0 8 * * *') // Запускается каждый день в 8:00
-  async generate_status() {
-    // Получаем все shartnoma
-    const shartnomaList = await this.shartnomaRepo.find({
-      where: { isDeleted: 0 },
-      relations: ['monthlyFee'], // Убедимся, что подгружаем monthlyFee
-    });
-
-    if (!shartnomaList.length) {
-      console.log('Нет активных shartnoma для обработки.');
-      return;
-    }
-
-    // Обрабатываем каждую запись
-    const updatedShartnoma = [];
-
-    for (const el of shartnomaList) {
-      // Если monthlyFee отсутствует или пустой
-      if (!el.monthlyFee || !el.monthlyFee.length) {
-        console.log(`Shartnoma с id = ${el.id} не имеет monthlyFee.`);
-        continue;
-      }
-
-      // Проверяем, есть ли неполностью оплаченные записи
-      const hasUnpaid = el.monthlyFee.some((fee) => fee.amount > fee.paid);
-
-      // Обновляем статус
-      const newStatus = hasUnpaid
-        ? EnumShartnomaPaid.no_paid
-        : EnumShartnomaPaid.paid;
-
-      if (el.purchase_status !== newStatus) {
-        updatedShartnoma.push({
-          ...el,
-          purchase_status: newStatus,
-        });
-      }
-    }
-
-    // Сохраняем обновления
-    if (updatedShartnoma.length) {
-      await this.shartnomaRepo.save(updatedShartnoma);
-      console.log(`${updatedShartnoma.length} shartnoma обновлено.`);
-    } else {
-      console.log('Обновления не требуются.');
-    }
-  }
-
   async findOne(id: number) {
     const shartnoma = await this.shartnomaRepo
       .createQueryBuilder('shartnoma')
@@ -340,6 +292,19 @@ export class ShartnomaService {
       .andWhere('shartnoma.isDeleted = :isDeleted', { isDeleted: 0 })
       .orderBy('monthlyFee.date', 'ASC')
       .getOne();
+
+    if (shartnoma.monthlyFee) {
+      let isPaid = true;
+      shartnoma.monthlyFee.map((el) => {
+        if (el.paid < el.amount) isPaid = false;
+      });
+      if (isPaid) {
+        await this.shartnomaRepo.update(
+          { id },
+          { purchase_status: EnumShartnomaPaid.paid },
+        );
+      }
+    }
 
     if (!shartnoma) {
       throw new NotFoundException('shartnoma mavjud emas');
