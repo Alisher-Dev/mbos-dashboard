@@ -40,7 +40,7 @@ export class ServerService {
       if (dayDiff <= 7) {
         const token = envConfig.telegram;
         const url = `https://api.telegram.org/bot${token}/sendMessage`;
-        const chat_id = [86419074, 5050279125, 7234548633];
+        const chat_id = [-1001585312347, 86419074, 5050279125, 7234548633];
 
         const message = `${el.name} serverining muddati ${dayDiff} kun (${el.date_term}) qoldi.
   Tarif: ${el.plan}

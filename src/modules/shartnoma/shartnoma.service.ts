@@ -3,14 +3,12 @@ import { CreateShartnomaDto } from './dto/create-shartnoma.dto';
 import { UpdateShartnomaDto } from './dto/update-shartnoma.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Shartnoma } from './entities/shartnoma.entity';
-import { Brackets, Like, Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { ApiResponse } from 'src/helpers/apiRespons';
 import { FindAllQuery } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
 import { User } from '../user/entities/user.entity';
 import {
-  EnumIncamIsPaid,
-  EnumServiceType,
   EnumShartnoma,
   EnumShartnomaPaid,
   EnumShartnomaTpeTranslation,
@@ -18,8 +16,6 @@ import {
 import { Income } from '../income/entities/income.entity';
 import { Service } from '../service/entities/service.entity';
 import { MonthlyFee } from '../monthly_fee/entities/monthly_fee.entity';
-import e from 'express';
-import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class ShartnomaService {

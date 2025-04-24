@@ -2,13 +2,11 @@ import { Injectable, NotFoundException, Search } from '@nestjs/common';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, Like, Repository } from 'typeorm';
-import { Shartnoma } from '../shartnoma/entities/shartnoma.entity';
+import { Brackets, Repository } from 'typeorm';
 import { ApiResponse } from 'src/helpers/apiRespons';
 import { FindAllQuery, IPayload } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
 import { Service } from './entities/service.entity';
-import { EnumServiceType } from 'src/helpers/enum';
 
 @Injectable()
 export class ServiceService {
