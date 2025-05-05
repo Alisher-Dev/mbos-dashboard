@@ -84,82 +84,84 @@ export class MonthlyFeeService {
     return new ApiResponse(monthlyFee, 200, pagination);
   }
 
-  @Cron('0 8 * * *') // Запускается каждый день в 8:00
+  @Cron('0 8 * * *') // Каждый день в 8:00
   async updateOrCreateMonthlyFees() {
-    const today = new Date('2026-09-29');
+    const today = new Date('2025-05-29');
 
-    if (today.getDate() >= 28) {
-      const allShartnoma = await this.shartnomaRepo.find({
-        where: { isDeleted: 0, shartnoma_turi: EnumShartnoma.subscription_fee },
-        relations: ['monthlyFee', 'service'],
-      });
+    const allShartnoma = await this.shartnomaRepo.find({
+      where: {
+        isDeleted: 0,
+        shartnoma_turi: EnumShartnoma.subscription_fee,
+      },
+      relations: ['monthlyFee', 'service'],
+    });
 
-      await Promise.all(
-        allShartnoma.map(async (shartnoma) => {
-          try {
-            // Проверка срока действия shartnoma
+    await Promise.all(
+      allShartnoma.map(async (shartnoma) => {
+        try {
+          if (shartnoma.enabled === 1) {
+            console.log(`Shartnoma с id = ${shartnoma.id} отключён.`);
+            return;
+          }
 
-            if (
-              shartnoma.shartnoma_muddati &&
-              !isNaN(new Date(shartnoma.shartnoma_muddati).getTime()) &&
-              new Date(shartnoma.shartnoma_muddati) < today
-            ) {
-              console.log(
-                `Срок действия shartnoma с id = ${shartnoma.id} истек.`,
-              );
-            }
+          if (!shartnoma.sana) {
+            console.log(`Нет даты начала (sana) у shartnoma ${shartnoma.id}`);
+            return;
+          }
 
-            // Подготовка следующего месяца
-            const nextMonth = new Date(today);
-            nextMonth.setMonth(nextMonth.getMonth() + 1);
-            nextMonth.setDate(1); // Первое число следующего месяца
+          const startDate = new Date(shartnoma.sana);
+          const currentDate = new Date(today);
+          currentDate.setMonth(currentDate.getMonth() + 1);
+          currentDate.setDate(1); // текущий месяц (начало)
 
-            const nextMonthKey = nextMonth.toISOString().slice(0, 7);
-            const existingMonthlyFee = shartnoma.monthlyFee.find(
-              (fee) =>
-                new Date(fee.date).toISOString().slice(0, 7) === nextMonthKey,
-            );
+          // Месяцы, которые уже есть
+          const existingMonths = new Set(
+            (shartnoma.monthlyFee || []).map(
+              (fee) => `${fee.date.getFullYear()}-${fee.date.getMonth() + 1}`,
+            ),
+          );
 
-            if (!existingMonthlyFee) {
-              const servicePrice = parseFloat(
-                shartnoma.service.price.toString() || '0',
-              );
-              const count = parseInt(shartnoma.count.toString() || '0', 10);
-              const amount = Math.floor(servicePrice * count) || 0;
+          // Начинаем с первого числа месяца начала
+          let current = new Date(startDate);
+          current.setDate(1);
 
-              const newMonthlyFee = this.monthlyFeeRepo.create({
-                date: nextMonth,
-                shartnoma: shartnoma,
-                amount: amount,
+          while (
+            current.getFullYear() < currentDate.getFullYear() ||
+            (current.getFullYear() === currentDate.getFullYear() &&
+              current.getMonth() <= currentDate.getMonth())
+          ) {
+            const key = `${current.getFullYear()}-${current.getMonth() + 1}`;
+
+            if (!existingMonths.has(key)) {
+              const newMonthly = this.monthlyFeeRepo.create({
+                amount: shartnoma.service?.price || 0,
+                ...shartnoma.monthlyFee?.[0],
+                id: undefined,
+                date: new Date(current),
+                shartnoma,
               });
 
-              if (shartnoma.purchase_status !== EnumShartnomaPaid.no_paid) {
-                await this.shartnomaRepo.save({
-                  ...shartnoma,
-                  purchase_status: EnumShartnomaPaid.no_paid,
-                });
-              }
-
-              await this.monthlyFeeRepo.save(newMonthlyFee);
+              await this.monthlyFeeRepo.save(newMonthly);
               console.log(
-                `Создан новый monthlyFee для shartnoma с id = ${shartnoma.id}`,
+                `✅ Создан monthlyFee за ${current.toISOString().slice(0, 7)} для shartnoma ${shartnoma.id}`,
               );
             } else {
               console.log(
-                `Запись monthlyFee за следующий месяц уже существует для shartnoma с id = ${shartnoma.id}`,
+                `⏭️ Уже существует monthlyFee за ${key} для shartnoma ${shartnoma.id}`,
               );
             }
-          } catch (error) {
-            console.error(
-              `Ошибка при обработке shartnoma с id = ${shartnoma.id}:`,
-              error,
-            );
+
+            // Переход к следующему месяцу
+            current.setMonth(current.getMonth() + 1);
           }
-        }),
-      );
-    } else {
-      console.log('Запрос не выполняется, так как сегодня меньше 28 числа.');
-    }
+        } catch (err) {
+          console.error(
+            `❌ Ошибка при обработке shartnoma ${shartnoma.id}:`,
+            err,
+          );
+        }
+      }),
+    );
   }
 
   async update(
