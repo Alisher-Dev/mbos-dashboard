@@ -86,7 +86,7 @@ export class MonthlyFeeService {
 
   @Cron('0 8 * * *') // Запускается каждый день в 8:00
   async updateOrCreateMonthlyFees() {
-    const today = new Date();
+    const today = new Date('2026-09-29');
 
     if (today.getDate() >= 28) {
       const allShartnoma = await this.shartnomaRepo.find({
@@ -98,6 +98,7 @@ export class MonthlyFeeService {
         allShartnoma.map(async (shartnoma) => {
           try {
             // Проверка срока действия shartnoma
+
             if (
               shartnoma.shartnoma_muddati &&
               !isNaN(new Date(shartnoma.shartnoma_muddati).getTime()) &&
@@ -106,7 +107,6 @@ export class MonthlyFeeService {
               console.log(
                 `Срок действия shartnoma с id = ${shartnoma.id} истек.`,
               );
-              return;
             }
 
             // Подготовка следующего месяца

@@ -33,7 +33,8 @@ export class MonthlyFeeController {
 
   @Get('/cron')
   Find() {
-    return this.monthlyFeeService.updateOrCreateMonthlyFees();
+    this.monthlyFeeService.updateOrCreateMonthlyFees();
+    return new Date();
   }
 
   @Get()

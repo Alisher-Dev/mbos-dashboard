@@ -289,7 +289,7 @@ export class ShartnomaService {
       .orderBy('monthlyFee.date', 'ASC')
       .getOne();
 
-    if (shartnoma.monthlyFee) {
+    if (shartnoma?.monthlyFee) {
       let isPaid = true;
       shartnoma.monthlyFee.map((el) => {
         if (el.paid < el.amount) isPaid = false;
@@ -298,6 +298,11 @@ export class ShartnomaService {
         await this.shartnomaRepo.update(
           { id },
           { purchase_status: EnumShartnomaPaid.paid },
+        );
+      } else {
+        await this.shartnomaRepo.update(
+          { id },
+          { purchase_status: EnumShartnomaPaid.no_paid },
         );
       }
     }
