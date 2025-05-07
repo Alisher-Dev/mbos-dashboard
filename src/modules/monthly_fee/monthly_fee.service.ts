@@ -138,6 +138,7 @@ export class MonthlyFeeService {
               const newMonthly = this.monthlyFeeRepo.create({
                 amount: shartnoma.service?.price || 0,
                 ...shartnoma.monthlyFee?.[0],
+                isDeleted: 0,
                 id: undefined,
                 date: new Date(current),
                 shartnoma,
