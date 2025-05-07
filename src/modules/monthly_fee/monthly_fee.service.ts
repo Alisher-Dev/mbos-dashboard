@@ -136,9 +136,10 @@ export class MonthlyFeeService {
 
             if (!existingMonths.has(key)) {
               const newMonthly = this.monthlyFeeRepo.create({
-                amount: shartnoma.service?.price || 0,
                 ...shartnoma.monthlyFee?.[0],
+                amount: shartnoma.service?.price || 0,
                 isDeleted: 0,
+                purchase_status: EnumShartnomaPaid.no_paid,
                 id: undefined,
                 date: new Date(current),
                 shartnoma,
