@@ -26,7 +26,7 @@ export class CreateMonthlyFeeDto {
   shartnoma_id: number;
 
   @ApiProperty()
-  @IsEnum({ enum: EnumShartnomaPaid })
+  @IsEnum(EnumShartnomaPaid)
   purchase_status: EnumShartnomaPaid;
 
   @IsString()
