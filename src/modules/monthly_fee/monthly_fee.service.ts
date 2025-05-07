@@ -93,7 +93,7 @@ export class MonthlyFeeService {
         isDeleted: 0,
         shartnoma_turi: EnumShartnoma.subscription_fee,
       },
-      relations: ['monthlyFee', 'service'],
+      relations: { service: true, monthlyFee: true },
     });
 
     await Promise.all(
@@ -116,8 +116,10 @@ export class MonthlyFeeService {
 
           // Месяцы, которые уже есть
           const existingMonths = new Set(
-            (shartnoma.monthlyFee || []).map(
-              (fee) => `${fee.date.getFullYear()}-${fee.date.getMonth() + 1}`,
+            (shartnoma.monthlyFee || []).map((fee) =>
+              fee.isDeleted === 0
+                ? `${fee.date.getFullYear()}-${fee.date.getMonth() + 1}`
+                : '',
             ),
           );
 
