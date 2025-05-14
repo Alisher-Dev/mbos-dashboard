@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
-import { Repository } from 'typeorm';
+import { Like, Raw, Repository } from 'typeorm';
 import { Income } from '../income/entities/income.entity';
 import { EnumIncamIsPaid, EnumShartnomaPaid } from 'src/helpers/enum';
 import { ApiResponse } from 'src/helpers/apiRespons';
 import { Shartnoma } from '../shartnoma/entities/shartnoma.entity';
 import { Service } from '../service/entities/service.entity';
+import { MonthlyFee } from '../monthly_fee/entities/monthly_fee.entity';
+import { IYears } from './dto/query.dto';
 
 @Injectable()
 export class DashboardService {
@@ -22,15 +24,28 @@ export class DashboardService {
 
     @InjectRepository(Service)
     private readonly serviceRepo: Repository<Service>,
+
+    @InjectRepository(MonthlyFee)
+    private readonly monthRepo: Repository<MonthlyFee>,
   ) {}
-  //
-  async find() {
-    const usersCount = await this.userRepo.count({ where: { isDeleted: 0 } });
+
+  async find({ year = new Date().getFullYear().toString() }: IYears) {
+    const today = new Date();
+
+    const usersCount = await this.userRepo.count({
+      where: {
+        isDeleted: 0,
+        created_at: Raw((alias) => `EXTRACT(YEAR FROM ${alias}) = :year`, {
+          year,
+        }),
+      },
+    });
 
     const income = await this.incomeRepo
       .createQueryBuilder('income')
       .select('SUM(income.amount)', 'total')
       .where('income.is_paid = :isPaid', { isPaid: EnumIncamIsPaid.paid })
+      .andWhere('EXTRACT(YEAR FROM income.date) = :year', { year })
       .andWhere('income.isDeleted = :isDeleted', { isDeleted: 0 })
       .getRawOne();
 
@@ -38,33 +53,61 @@ export class DashboardService {
       .createQueryBuilder('income')
       .select('SUM(income.amount)', 'total')
       .where('income.is_paid = :isPaid', {
-        isPaid: EnumIncamIsPaid.confirm_payment,
+        isPaid: EnumIncamIsPaid.no_paid,
       })
+      .andWhere('EXTRACT(YEAR FROM income.date) = :year', { year })
       .andWhere('income.isDeleted = :isDeleted', { isDeleted: 0 })
       .getRawOne();
 
-    const expend = await this.incomeRepo
+    const month = await this.monthRepo.find({
+      where: {
+        isDeleted: 0,
+        purchase_status: EnumShartnomaPaid.no_paid,
+        date: Raw((alias) => `EXTRACT(YEAR FROM ${alias}) = :year`, { year }),
+      },
+    });
+
+    const activeMonth = await this.incomeRepo
       .createQueryBuilder('income')
-      .select('SUM(income.amount)', 'total')
-      .where('income.is_paid = :isPaid', { isPaid: EnumIncamIsPaid.no_paid })
-      .andWhere('income.isDeleted = :isDeleted', { isDeleted: 0 })
+      .select(
+        `
+    SUM(CASE WHEN income.is_paid = :paid THEN income.amount ELSE 0 END) AS income,
+    SUM(CASE WHEN income.is_paid = :noPaid THEN income.amount ELSE 0 END) AS confirm
+  `,
+      )
+      .where('income.isDeleted = :delete', { delete: 0 })
+      .andWhere('EXTRACT(YEAR FROM income.date) = :year', { year })
+      .andWhere('EXTRACT(MONTH FROM income.date) = :month', {
+        month: today.getMonth() + 1,
+      })
+      .setParameters({
+        paid: EnumIncamIsPaid.paid,
+        noPaid: EnumIncamIsPaid.no_paid,
+      })
       .getRawOne();
+
+    const duty = month.reduce((acc, el) => (acc += +el.amount - +el.paid), 0);
 
     const recentContract = await this.shartnomaRepo.find({
-      relations: ['user', 'service'],
+      relations: ['user'],
       where: {
         user: { isDeleted: 0 },
         service: { isDeleted: 0 },
         isDeleted: 0,
+        enabled: 0,
+        sana: Raw((alias) => `EXTRACT(YEAR FROM ${alias}) = :year`, {
+          year,
+        }),
       },
     });
 
     return new ApiResponse({
       usersCount,
       income: income?.total || 0,
-      expend: expend?.total || 0,
       confirm: confirm?.total || 0,
-      recentContract: recentContract.slice(0, 5),
+      duty,
+      contractCount: recentContract.length,
+      activeMonth,
     });
   }
 
@@ -150,28 +193,130 @@ export class DashboardService {
     });
   }
 
-  async findStatstik() {
-    const stats = await this.incomeRepo
-      .createQueryBuilder('income')
-      .select("TO_CHAR(income.created_at, 'YYYY-MM')", 'date')
-      .addSelect(
-        'SUM(CASE WHEN income.is_paid = :paid THEN income.amount ELSE 0 END)',
-        'tushum',
-      )
-      .addSelect(
-        'SUM(CASE WHEN income.is_paid = :no_paid THEN income.amount ELSE 0 END)',
-        'chikim',
-      )
-      .setParameters({
-        paid: EnumIncamIsPaid.paid,
-        no_paid: EnumIncamIsPaid.no_paid,
-      })
-      .where('income.isDeleted = :isDeleted', { isDeleted: 0 })
-      .groupBy("TO_CHAR(income.created_at, 'YYYY-MM')")
-      .orderBy("TO_CHAR(income.created_at, 'YYYY-MM')", 'ASC')
+  async findStatstik({ year = new Date().getFullYear().toString() }: IYears) {
+    // Генерируем список всех месяцев (с 1 по 12)
+    const allMonths = Array.from(
+      { length: 12 },
+      (_, i) => `${year}-${(i + 1).toString().padStart(2, '0')}`,
+    );
+
+    // Собираем данные по каждому месяцу
+    const result = await Promise.all(
+      allMonths.map(async (key) => {
+        const [y, m] = key.split('-');
+        const yearNum = +y;
+        const monthNum = +m;
+
+        // Получаем данные по доходам и расходам для месяца
+        const incomeData = await this.incomeRepo
+          .createQueryBuilder('income')
+          .select([
+            `SUM(CASE WHEN income.is_paid = :paid THEN income.amount ELSE 0 END) as tushum`,
+            `SUM(CASE WHEN income.is_paid = :no_paid THEN income.amount ELSE 0 END) as chikim`,
+          ])
+          .where('income.isDeleted = :isDeleted', { isDeleted: 0 })
+          .andWhere('EXTRACT(YEAR FROM income.date) = :year', { year: yearNum })
+          .andWhere('EXTRACT(MONTH FROM income.date) = :month', {
+            month: monthNum,
+          })
+          .setParameters({
+            paid: EnumIncamIsPaid.paid,
+            no_paid: EnumIncamIsPaid.no_paid,
+          })
+          .getRawOne();
+
+        const tushum = +incomeData?.tushum || 0;
+        const chikim = +incomeData?.chikim || 0;
+
+        // Рассчитываем долг для месяца (если есть связанные данные)
+        const relatedMonths = await this.monthRepo.find({
+          where: {
+            isDeleted: 0,
+            date: Raw(
+              (alias) =>
+                `EXTRACT(YEAR FROM ${alias}) = :year AND EXTRACT(MONTH FROM ${alias}) = :month`,
+              { year: yearNum, month: monthNum },
+            ),
+          },
+        });
+
+        const duty = relatedMonths.reduce(
+          (acc, el) => acc + (+el.amount - +el.paid),
+          0,
+        );
+
+        return {
+          date: key,
+          tushum,
+          chikim,
+          duty,
+        };
+      }),
+    );
+
+    return new ApiResponse(result);
+  }
+
+  async findYearlyForecast() {
+    // Находим все уникальные года
+    const years = (
+      await this.incomeRepo.find({ where: { isDeleted: 0 } })
+    ).reduce((acc, el) => {
+      const year = new Date(el.date).getFullYear();
+      if (!acc.includes(year)) {
+        acc.push(year);
+      }
+      return acc;
+    }, []);
+
+    // Получаем данные для каждого года
+    return await Promise.all(
+      years.map(async (year) => {
+        const incomeData = await this.incomeRepo
+          .createQueryBuilder('income')
+          .select([
+            `SUM(CASE WHEN income.is_paid = :paid THEN income.amount ELSE 0 END) as tushum`,
+            `SUM(CASE WHEN income.is_paid = :no_paid THEN income.amount ELSE 0 END) as chikim`,
+          ])
+          .setParameters({
+            paid: EnumIncamIsPaid.paid,
+            no_paid: EnumIncamIsPaid.no_paid,
+          })
+          .where('income.isDeleted = :isDeleted', { isDeleted: 0 })
+          .andWhere('EXTRACT(YEAR FROM income.date) = :year', { year })
+          .getRawOne();
+
+        // Возвращаем только year, tushum и chikim
+        return {
+          year,
+          tushum: incomeData?.tushum || 0,
+          chikim: incomeData?.chikim || 0,
+        };
+      }),
+    );
+  }
+
+  async findStatistikOnlyIncome({
+    year = new Date().getFullYear().toString(),
+  }: IYears) {
+    const data = await this.monthRepo
+      .createQueryBuilder('month')
+      .select([
+        `TO_CHAR(month.date, 'MM') AS month`,
+        `SUM(month.amount) AS amount`,
+      ])
+      .where('month.isDeleted = :isDeleted', { isDeleted: 0 })
+      .andWhere(`EXTRACT(YEAR FROM month.date) = :year`, { year: +year })
+      .groupBy(`TO_CHAR(month.date, 'MM')`)
+      .orderBy(`month`, 'ASC')
       .getRawMany();
 
-    return new ApiResponse(stats);
+    const result = data.map((item) => ({
+      date: item.month,
+      duty: +item.amount,
+    }));
+
+    return new ApiResponse(result);
   }
 
   async findServiceDash(id: number) {

@@ -13,7 +13,7 @@ class Token {
   }
 
   generateAccessToken(payload: IPayload) {
-    return sign(payload, this.accessSecret, { expiresIn: '10m' });
+    return sign(payload, this.accessSecret, { expiresIn: '1d' });
   }
 
   generateRefreshToken(payload: IPayload) {

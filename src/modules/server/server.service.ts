@@ -27,38 +27,38 @@ export class ServerService {
     return new ApiResponse('server created');
   }
 
-  @Cron('0 0-23/10 * * *')
+  @Cron('0 8 * * *')
   async notification() {
     const server = await this.serverRepo.find({ where: { isDeleted: 0 } });
 
     const notifications = server.map(async (el) => {
-      const timeDiff = Math.abs(
+      const timeDiff = Math.floor(
         new Date().getTime() - new Date(el.date_term).getTime(),
       );
       const dayDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
 
+      const url = `https://api.telegram.org/bot${envConfig.telegram}/sendMessage`;
+      const chat_id = [86419074, 5050279125, 7234548633];
+      // -1001585312347 online group chat Id
+      const messagedayDiff =
+        dayDiff > 0
+          ? `${dayDiff} kun qoldi`
+          : `o'tganiga ${Math.abs(dayDiff)} kun bo'ldi`;
+
+      const message = `${el.name} serverining muddati ${messagedayDiff} (${el.date_term}) sana.
+Tarif: ${el.plan}
+Tarif summasi: ${el.price} so'm
+Mas'ul shaxs: ${el.responsible}`;
+
       if (dayDiff <= 7) {
-        const token = envConfig.telegram;
-        const url = `https://api.telegram.org/bot${token}/sendMessage`;
-        const chat_id = [-1001585312347, 86419074, 5050279125, 7234548633];
-
-        const message = `${el.name} serverining muddati ${dayDiff} kun (${el.date_term}) qoldi.
-  Tarif: ${el.plan}
-  Tarif summasi: ${el.price} so'm
-  Mas'ul shaxs: ${el.responsible}`;
-
         chat_id.map(async (el) => {
           try {
-            const response = await axios.post(url, {
+            await axios.post(url, {
               chat_id: el,
               text: message,
             });
-            console.log(`Сообщение отправлено: ${response.data.ok}`);
           } catch (error) {
-            console.error(
-              `Ошибка отправки сообщения: ${error.message}`,
-              new Date(),
-            );
+            console.error(`Ошибка отправки сообщения: ${error.message}`);
           }
         });
       } else if (dayDiff <= 0) {

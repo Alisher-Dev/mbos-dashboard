@@ -11,6 +11,8 @@ import { FindAllQuery } from 'src/helpers/type';
 import { Pagination } from 'src/helpers/pagination';
 import { EnumShartnoma, EnumShartnomaPaid } from 'src/helpers/enum';
 import { BalanceHistory } from '../balance_history/entities/balance_history.entity';
+import axios from 'axios';
+import { envConfig } from 'src/config/env.config';
 
 @Injectable()
 export class MonthlyFeeService {
@@ -137,7 +139,8 @@ export class MonthlyFeeService {
             if (!existingMonths.has(key)) {
               const newMonthly = this.monthlyFeeRepo.create({
                 ...shartnoma.monthlyFee?.[0],
-                amount: shartnoma.service?.price || 0,
+                amount: +shartnoma.service?.price * +shartnoma.count || 0,
+                paid: 0,
                 isDeleted: 0,
                 purchase_status: EnumShartnomaPaid.no_paid,
                 id: undefined,
@@ -166,6 +169,40 @@ export class MonthlyFeeService {
         }
       }),
     );
+  }
+
+  @Cron('0 8 * * *') // Каждый день в 8:00
+  async notification() {
+    const month = await this.monthlyFeeRepo.find({
+      where: { isDeleted: 0 },
+      relations: { shartnoma: { user: true, service: true } },
+    });
+
+    month.map((el) => {
+      const isUnpaid = el.purchase_status === EnumShartnomaPaid.no_paid;
+
+      // Разница в миллисекундах
+      const diffMs = Date.now() - new Date(el.date).getTime();
+
+      // Переводим в дни
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+      const messageWarning = `Hayrli kun! ${el.shartnoma.service?.title || 'N/A'} uchun ${Math.abs(diffDays)} kun ichida to'lov qilmasangiz bu xizmat o'chirilishini ma'lum qilamiz. 
+Qarzdorlik: ${(+el.amount - +el.paid).toLocaleString()} 
+Tel: +998622277676 
+mbos.uz
+`;
+
+      const messageForbid = `Sizga berilayotgan ${el.shartnoma.service?.title || 'N/A'} to'lovni amalga oshirmaganligingiz uchun ${new Date(el.date).toLocaleDateString('uz-UZ')} sanasidan to'xtatildi. 
+Tel: +998622277676 
+mbos.uz`;
+
+      if (isUnpaid && diffDays >= -5 && diffDays <= 0) {
+        notificationEskiz(el.shartnoma.user.phone.toString(), messageWarning);
+      } else if (isUnpaid && diffDays > 0 && diffDays < 2) {
+        notificationEskiz(el.shartnoma.user.phone.toString(), messageForbid);
+      }
+    });
   }
 
   async update(
@@ -204,7 +241,17 @@ export class MonthlyFeeService {
       await this.balancHistoryRepo.save(newBalancHistory);
     }
     if (monthlyFee.amount <= monthlyFee.paid) {
+      const messageSuccess = `Sizning ${new Date(monthlyFee.date).toLocaleDateString('uz-UZ')} kungi ${monthlyFee.amount.toLocaleString()} UZS(USD) to'lovingiz qabul qilindi. 
+Tel: +998622277676 
+mbos.uz`;
+
+      notificationEskiz(
+        monthlyFee.shartnoma.user.phone.toString(),
+        messageSuccess,
+      );
       monthlyFee.purchase_status = EnumShartnomaPaid.paid;
+    } else {
+      monthlyFee.purchase_status = EnumShartnomaPaid.no_paid;
     }
 
     await this.monthlyFeeRepo.save(monthlyFee);
@@ -220,5 +267,44 @@ export class MonthlyFeeService {
 
     await this.monthlyFeeRepo.save({ ...monthlyFee, isDeleted: 1 });
     return new ApiResponse("monthlyFee o'chirildi");
+  }
+}
+
+export async function notificationEskiz(phone: string, message: string) {
+  try {
+    // 🔐 Авторизация
+    const loginRes = await axios.post(
+      'https://notify.eskiz.uz/api/auth/login',
+      {
+        email: envConfig.eskiz.EMAIL,
+        password: envConfig.eskiz.SECRET,
+      },
+    );
+
+    const token = loginRes.data.data.token;
+
+    // 📤 Отправка SMS
+    const smsRes = await axios.post(
+      'https://notify.eskiz.uz/api/message/sms/send',
+      {
+        mobile_phone: phone,
+        message: message.trim(),
+        from: 'mbos',
+        callback_url: '',
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+    console.log('✅ SMS отправлено:', phone);
+  } catch (error: any) {
+    if (error.response) {
+      console.error('❌ Ошибка отправки:', error.response.data);
+    } else {
+      console.error('❌ Ошибка:', error.message);
+    }
   }
 }

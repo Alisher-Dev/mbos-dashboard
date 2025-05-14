@@ -6,9 +6,12 @@ import { User } from '../user/entities/user.entity';
 import { Income } from '../income/entities/income.entity';
 import { Shartnoma } from '../shartnoma/entities/shartnoma.entity';
 import { Service } from '../service/entities/service.entity';
+import { MonthlyFee } from '../monthly_fee/entities/monthly_fee.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Income, Shartnoma, Service])],
+  imports: [
+    TypeOrmModule.forFeature([User, Income, Shartnoma, Service, MonthlyFee]),
+  ],
   controllers: [DashboardController],
   providers: [DashboardService],
 })

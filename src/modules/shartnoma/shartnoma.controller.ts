@@ -16,6 +16,7 @@ import { UpdateShartnomaDto } from './dto/update-shartnoma.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { FindAllQuery, IPayload } from 'src/helpers/type';
 import { AuthGuard } from 'src/helpers/authGuard';
+import { IShartnomaQueryDto } from './dto/query.dto';
 
 @Controller('shartnoma')
 @ApiTags('shartnoma')
@@ -43,8 +44,8 @@ export class ShartnomaController {
 
   @Get(':id')
   @UseGuards(AuthGuard)
-  findOne(@Param('id') id: string) {
-    return this.shartnomaService.findOne(+id);
+  findOne(@Param('id') id: string, @Query() query: IShartnomaQueryDto) {
+    return this.shartnomaService.findOne(+id, query);
   }
 
   @Patch(':id')

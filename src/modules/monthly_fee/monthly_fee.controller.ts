@@ -37,6 +37,12 @@ export class MonthlyFeeController {
     return new Date();
   }
 
+  @Get('/notification')
+  notification() {
+    this.monthlyFeeService.notification();
+    return new Date();
+  }
+
   @Get()
   @UseGuards(AuthGuard)
   findAll(@Query() query: FindAllQuery) {

@@ -1,7 +1,8 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/helpers/authGuard';
+import { IYears } from './dto/query.dto';
 
 @Controller('dashboard')
 @ApiTags('dashboard')
@@ -10,8 +11,8 @@ export class DashboardController {
 
   @Get()
   @UseGuards(AuthGuard)
-  find() {
-    return this.dashboardService.find();
+  find(@Query() query: IYears) {
+    return this.dashboardService.find(query);
   }
 
   @Get('/income')
@@ -22,8 +23,20 @@ export class DashboardController {
 
   @Get('/statstik')
   @UseGuards(AuthGuard)
-  findStatistik() {
-    return this.dashboardService.findStatstik();
+  findStatistik(@Query() query: IYears) {
+    return this.dashboardService.findStatstik(query);
+  }
+
+  @Get('/statstik-years')
+  @UseGuards(AuthGuard)
+  findStatistikYears() {
+    return this.dashboardService.findYearlyForecast();
+  }
+
+  @Get('/statstik-income')
+  @UseGuards(AuthGuard)
+  findStatistikOnlyIncome(@Query() query: IYears) {
+    return this.dashboardService.findStatistikOnlyIncome(query);
   }
 
   @Get('/serviceDash/:id')

@@ -142,7 +142,7 @@ export class IncomeService {
             });
         }),
       )
-      .orderBy('income.date', filter || 'ASC')
+      .orderBy('income.date', filter || 'DESC')
       .take(limit)
       .skip(((page - 1) * limit) | 0);
 

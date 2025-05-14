@@ -16,6 +16,7 @@ import {
 import { Income } from '../income/entities/income.entity';
 import { Service } from '../service/entities/service.entity';
 import { MonthlyFee } from '../monthly_fee/entities/monthly_fee.entity';
+import { IShartnomaQueryDto } from './dto/query.dto';
 
 @Injectable()
 export class ShartnomaService {
@@ -74,15 +75,17 @@ export class ShartnomaService {
     newShartnoma.service = service;
 
     const { advancePayment, count } = createShartnomaDto;
+
     newShartnoma.remainingPayment =
       service.price * count - (advancePayment || 0);
+
     newShartnoma.purchase_status =
       advancePayment && advancePayment >= service.price * count
         ? EnumShartnomaPaid.paid
         : EnumShartnomaPaid.no_paid;
 
     if (newShartnoma.shartnoma_turi === EnumShartnoma.subscription_fee) {
-      const startDate = new Date(createShartnomaDto.texnik_muddati);
+      const startDate = new Date(createShartnomaDto.tolash_sana);
       const endDate = new Date();
       const monthlyFees = [];
 
@@ -251,7 +254,7 @@ export class ShartnomaService {
     return new ApiResponse(shartnoma, 200, pagination);
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, { orderForMonth = 'DESC' }: IShartnomaQueryDto) {
     const shartnoma = await this.shartnomaRepo
       .createQueryBuilder('shartnoma')
       .leftJoinAndSelect(
@@ -286,7 +289,7 @@ export class ShartnomaService {
       )
       .where('shartnoma.id = :id', { id })
       .andWhere('shartnoma.isDeleted = :isDeleted', { isDeleted: 0 })
-      .orderBy('monthlyFee.date', 'ASC')
+      .orderBy('monthlyFee.date', orderForMonth)
       .getOne();
 
     if (shartnoma?.monthlyFee) {
@@ -455,14 +458,18 @@ export class ShartnomaService {
   // }
 
   async remove(id: number) {
-    const shartnoma = await this.shartnomaRepo.findOneBy({
-      id,
-      isDeleted: 0,
-      enabled: 0,
+    const shartnoma = await this.shartnomaRepo.findOne({
+      where: { id, isDeleted: 0, enabled: 0 },
+      relations: { monthlyFee: true },
+      select: { id: true, monthlyFee: { id: true } },
     });
-    if (!shartnoma) {
-      throw new NotFoundException('shartnoma mavjud emas');
-    }
+
+    if (!shartnoma) throw new NotFoundException('shartnoma mavjud emas');
+
+    shartnoma.monthlyFee.map(async (el) => {
+      await this.monthlyFeeRepo.update({ id: el.id }, { isDeleted: 1 });
+    });
+
     await this.shartnomaRepo.save({ ...shartnoma, isDeleted: 1 });
     return new ApiResponse(`shartnoma o'chirildi`);
   }

@@ -15,4 +15,8 @@ export const envConfig = {
     accessSecret: process.env.ACCESS_TOKEN_SECRET,
     refreshSecret: process.env.REFRESH_TOKEN_SECRET,
   },
+  eskiz: {
+    EMAIL: process.env.EMAIL,
+    SECRET: process.env.SECRET,
+  },
 };
