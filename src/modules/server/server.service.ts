@@ -50,7 +50,7 @@ Tarif: ${el.plan}
 Tarif summasi: ${el.price} so'm
 Mas'ul shaxs: ${el.responsible}`;
 
-      if (dayDiff <= 7) {
+      if (dayDiff > -7) {
         chat_id.map(async (el) => {
           try {
             await axios.post(url, {
@@ -61,7 +61,7 @@ Mas'ul shaxs: ${el.responsible}`;
             console.error(`Ошибка отправки сообщения: ${error.message}`);
           }
         });
-      } else if (dayDiff <= 0) {
+      } else if (dayDiff >= 0) {
         await this.serverRepo.save({ ...el, status: 0 });
         console.log('server ochdi');
       }

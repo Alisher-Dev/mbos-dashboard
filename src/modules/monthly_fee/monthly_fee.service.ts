@@ -197,9 +197,9 @@ mbos.uz
 Tel: +998622277676 
 mbos.uz`;
 
-      if (isUnpaid && diffDays >= -5 && diffDays <= 0) {
+      if (isUnpaid && diffDays === -5) {
         notificationEskiz(el.shartnoma.user.phone.toString(), messageWarning);
-      } else if (isUnpaid && diffDays > 0 && diffDays < 2) {
+      } else if (isUnpaid && diffDays === 0) {
         notificationEskiz(el.shartnoma.user.phone.toString(), messageForbid);
       }
     });
